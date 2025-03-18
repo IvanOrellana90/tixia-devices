@@ -32,7 +32,6 @@ import DeviceList from './components/Devices/DeviceList';
 /// Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
-import EventSidebar from './layouts/EventSidebar';
 
 const Markup = () => {
   const allroutes = [
@@ -87,15 +86,13 @@ const Markup = () => {
 
 function MainLayout() {
   const { sidebariconHover } = useContext(ThemeContext);
-  const [activeEvent, setActiveEvent] = useState(false);
   return (
     <>
       <div
         className={`show  ${sidebariconHover ? 'iconhover-toggle' : ''}`}
         id="main-wrapper"
       >
-        <Nav onClick={() => setActiveEvent(!activeEvent)} />
-        <EventSidebar activeEvent={activeEvent} />
+        <Nav />
         <div
           className="content-body"
           style={{ minHeight: window.screen.height - 45 }}
@@ -111,24 +108,10 @@ function MainLayout() {
 }
 function MainLayout2() {
   const [activeEvent, setActiveEvent] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1401) {
-        setIsMobile(true);
-      } else {
-        setIsMobile(false);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
   return (
     <>
       <div id="main-wrapper" className={`show `}>
         <Nav onClick={() => setActiveEvent(true)} />
-        <EventSidebar activeEvent={activeEvent} isMobile={isMobile} />
         <div className={`content-body ${activeEvent ? 'rightside-event' : ''}`}>
           <div className={`container-fluid`}>
             <Outlet />

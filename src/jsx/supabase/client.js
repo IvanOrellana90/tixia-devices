@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Obtener las credenciales de las variables de entorno
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Verificar que las credenciales estén definidas
 if (!supabaseUrl || !supabaseKey) {

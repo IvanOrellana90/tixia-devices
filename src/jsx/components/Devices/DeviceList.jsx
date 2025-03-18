@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { useTable, useSortBy, useGlobalFilter, useFilters } from 'react-table';
-import { supabase } from '../../supabase/client'; // Asegúrate de importar el cliente de Supabase
+import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 
 // Componente para el filtro por columna
@@ -30,8 +30,8 @@ const COLUMNS = [
     Filter: ColumnFilter, // Filtro por columna
   },
   {
-    Header: 'Client Url',
-    accessor: 'client_url', // Accede a la propiedad "client_id" de cada dispositivo
+    Header: 'Client',
+    accessor: 'client_name', // Accede a la propiedad "client_name" de cada dispositivo
     Filter: ColumnFilter, // Filtro por columna
   },
   {
@@ -62,12 +62,20 @@ const DeviceList = () => {
   // Obtener la lista de dispositivos desde Supabase
   useEffect(() => {
     const fetchDevices = async () => {
-      const { data, error } = await supabase.from('devices').select('*'); // Seleccionar todas las columnas de la tabla "devices"
+      const { data, error } = await supabase.from('devices').select(`
+        *,
+        clients (name)
+      `); // Seleccionar todas las columnas de la tabla "devices" y el nombre del cliente
 
       if (error) {
         console.error('Error fetching devices:', error.message);
       } else {
-        setDevices(data); // Guardar la lista de dispositivos en el estado
+        // Mapear los datos para incluir el nombre del cliente
+        const devicesWithClientName = data.map((device) => ({
+          ...device,
+          client_name: device.clients.name,
+        }));
+        setDevices(devicesWithClientName); // Guardar la lista de dispositivos en el estado
       }
     };
 
