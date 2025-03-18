@@ -1,13 +1,14 @@
-import { Fragment, useState, useContext, useEffect } from 'react';
+import { Fragment, useContext } from 'react';
 
-/// React router dom
+// React router dom
 import { Routes, Route, Outlet } from 'react-router-dom';
 import PrivateRoute from './layouts/PrivateRoute';
-/// Css
+
+// Css
 import './index.css';
 import './chart.css';
 
-/// Layout
+// Layout
 import Nav from './layouts/nav';
 import Footer from './layouts/Footer';
 import ScrollToTop from './layouts/ScrollToTop';
@@ -28,8 +29,9 @@ import FacilityList from './components/Facilities/FacilityList';
 // Device
 import AddDevice from './components/Devices/AddDevice';
 import DeviceList from './components/Devices/DeviceList';
+import EditDevice from './components/Devices/EditDevice';
 
-/// Pages
+// Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
 
@@ -50,6 +52,7 @@ const Markup = () => {
     //Device
     { url: 'add-device', component: <AddDevice /> },
     { url: 'device-list', component: <DeviceList /> },
+    { url: 'edit-device/:id', component: <EditDevice /> },
   ];
 
   return (
@@ -107,12 +110,11 @@ function MainLayout() {
   );
 }
 function MainLayout2() {
-  const [activeEvent, setActiveEvent] = useState(true);
   return (
     <>
       <div id="main-wrapper" className={`show `}>
-        <Nav onClick={() => setActiveEvent(true)} />
-        <div className={`content-body ${activeEvent ? 'rightside-event' : ''}`}>
+        <Nav />
+        <div className={`content-body`}>
           <div className={`container-fluid`}>
             <Outlet />
           </div>

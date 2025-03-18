@@ -52,7 +52,7 @@ label.mailclinet {
 }
 
 .wizard-four-color {
-  color: #222fb9;
+  color: #194682;
   text-decoration: underline;
 }
 
@@ -204,7 +204,7 @@ a:focus {
 
 .dd .nestable-item-name {
   color: #fff;
-  background: #222fb9;
+  background: #194682;
   display: block;
   height: 30px;
   margin: 5px 0;
@@ -496,16 +496,16 @@ button.react-calendar__navigation__label {
 }
 button.react-calendar__navigation__label:hover {
   color: white !important;
-  background: #222fb9 !important;
+  background: #194682 !important;
 }
 button.react-calendar__navigation__label:hover > span {
   color: white !important;
-  /* background: #222fb9 !important; */
+  /* background: #194682 !important; */
 }
 .react-calendar__navigation button:enabled:hover,
 .react-calendar__navigation button:enabled:focus,
 .react-calendar__navigation__label:hover > span {
-  background-color: #222fb9 !important;
+  background-color: #194682 !important;
   color: white;
   border-radius: 50%;
 }
@@ -514,14 +514,14 @@ button.react-calendar__navigation__label:hover > span {
 .react-calendar__tile--hasActive,
 .react-calendar__navigation button[disabled],
 .react-calendar__navigation button[disabled] > span {
-  background-color: #222fb9 !important;
+  background-color: #194682 !important;
   color: white;
 }
 button.react-calendar__tile.react-calendar__tile--now.react-calendar__month-view__days__day,
 button.react-calendar__tile.react-calendar__tile--active.react-calendar__tile--range.react-calendar__tile--rangeStart.react-calendar__tile--rangeEnd.react-calendar__tile--rangeBothEnds.react-calendar__month-view__days__day,
 button.react-calendar__tile.react-calendar__month-view__days__day:hover {
   position: relative;
-  background: #222fb9 !important;
+  background: #194682 !important;
   box-shadow: none;
   color: white !important;
   border-radius: 10px;

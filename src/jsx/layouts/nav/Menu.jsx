@@ -1,4 +1,10 @@
 export const MenuList = [
+  {
+    title: 'Home',
+    to: '/',
+    iconStyle: <i className="flaticon-381-home" />,
+  },
+
   // Devices
   {
     title: 'Devices',
