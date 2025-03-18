@@ -13,15 +13,6 @@ import Footer from './layouts/Footer';
 import ScrollToTop from './layouts/ScrollToTop';
 import { ThemeContext } from '../context/ThemeContext';
 
-/// Dashboard
-import Home from './components/Dashboard/Home';
-import DashboardDark from './components/Dashboard/DashboardDark';
-import Analytics from './components/Dashboard/Analytics';
-import Events from './components/Dashboard/Events';
-import OrderList from './components/Dashboard/OrderList';
-import CustomerList from './components/Dashboard/CustomerList';
-import Reviews from './components/Dashboard/Reviews';
-
 // Client
 import AddClient from './components/Clients/AddClient';
 import ClientList from './components/Clients/ClientList';
@@ -45,13 +36,6 @@ import EventSidebar from './layouts/EventSidebar';
 
 const Markup = () => {
   const allroutes = [
-    /// Dashboard
-    { url: 'analytics', component: <Analytics /> },
-    { url: 'events', component: <Events /> },
-    { url: 'order-list', component: <OrderList /> },
-    { url: 'customer-list', component: <CustomerList /> },
-    { url: 'reviews', component: <Reviews /> },
-
     //Clients
     { url: 'add-client', component: <AddClient /> },
     { url: 'client-list', component: <ClientList /> },
@@ -67,7 +51,6 @@ const Markup = () => {
     //Device
     { url: 'add-device', component: <AddDevice /> },
     { url: 'device-list', component: <DeviceList /> },
-
   ];
 
   return (
@@ -80,9 +63,7 @@ const Markup = () => {
         {/* Rutas protegidas */}
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout2 />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Home />} />
-            <Route path="/dashboard-dark" element={<DashboardDark />} />
+            <Route path="/" element={<DeviceList />} />
           </Route>
           <Route element={<MainLayout />}>
             {allroutes.map((data, i) => (

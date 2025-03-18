@@ -15,7 +15,7 @@ const deviceSchema = Yup.object().shape({
     .min(3, 'Model must be at least 3 characters')
     .max(50, 'Model cannot exceed 50 characters')
     .required('Model is required'),
-  client_url: Yup.string().required('Client ID is required'),
+  client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string()
     .min(3, 'Location must be at least 3 characters')
@@ -34,7 +34,9 @@ const AddDevice = () => {
   // Obtener la lista de clientes al cargar el componente
   useEffect(() => {
     const fetchClients = async () => {
-      const { data, error } = await supabase.from('clients').select('id, name, url');
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name, url');
       if (error) {
         toast.error(`Error fetching clients: ${error.message}`);
       } else {
@@ -45,7 +47,7 @@ const AddDevice = () => {
     fetchClients();
   }, []);
 
-  // Función para obtener los sites filtrados por client_url
+  // Función para obtener los sites filtrados por client_id
   const fetchSites = async (clientId) => {
     const { data, error } = await supabase
       .from('sites')
@@ -80,7 +82,7 @@ const AddDevice = () => {
       const cleanedValues = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
-        client_url: values.client_url.trim(),
+        client_id: values.client_id.trim(),
         site_ksec_id: values.site_ksec_id.trim(),
         facility_ksec_id: values.facility_ksec_id.trim() || null,
         location: values.location.trim(),
@@ -133,7 +135,7 @@ const AddDevice = () => {
                   initialValues={{
                     unique_id: '',
                     model: '',
-                    client_url: '',
+                    client_id: '',
                     site_ksec_id: '',
                     facility_ksec_id: '',
                     location: '',
@@ -190,10 +192,10 @@ const AddDevice = () => {
                             </label>
                             <Field
                               as="select"
-                              name="client_url"
+                              name="client_id"
                               className="form-control"
                               onChange={(e) => {
-                                setFieldValue('client_url', e.target.value);
+                                setFieldValue('client_id', e.target.value);
                                 setFieldValue('site_ksec_id', ''); // Resetear site_ksec_id
                                 setFieldValue('facility_ksec_id', ''); // Resetear facility_ksec_id
                                 fetchSites(
@@ -205,13 +207,17 @@ const AddDevice = () => {
                             >
                               <option value="">Select a Client</option>
                               {clients.map((client) => (
-                                <option key={client.id} value={client.url} data-id={client.id}>
+                                <option
+                                  key={client.id}
+                                  value={client.id}
+                                  data-id={client.id}
+                                >
                                   {client.name}
                                 </option>
                               ))}
                             </Field>
                             <ErrorMessage
-                              name="client_url"
+                              name="client_id"
                               component="div"
                               className="text-danger"
                             />
@@ -227,7 +233,7 @@ const AddDevice = () => {
                               as="select"
                               name="site_ksec_id"
                               className="form-control"
-                              disabled={!values.client_url} // Deshabilitar si no hay client_url
+                              disabled={!values.client_id} // Deshabilitar si no hay client_id
                               onChange={(e) => {
                                 setFieldValue('site_ksec_id', e.target.value);
                                 setFieldValue('facility_ksec_id', ''); // Resetear facility_ksec_id

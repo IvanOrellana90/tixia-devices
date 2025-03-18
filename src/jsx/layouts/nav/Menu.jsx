@@ -1,41 +1,4 @@
 export const MenuList = [
-  //Dashboard
-  {
-    title: 'Dashboard',
-    classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-networking" />,
-    content: [
-      {
-        title: 'Dashboard Light',
-        to: 'dashboard',
-      },
-      {
-        title: 'Dashboard Dark',
-        to: 'dashboard-dark',
-      },
-      {
-        title: 'Analytics',
-        to: 'analytics',
-      },
-      {
-        title: 'Events',
-        to: 'events',
-      },
-      {
-        title: 'Order List',
-        to: 'order-list',
-      },
-      {
-        title: 'Customer List',
-        to: 'customer-list',
-      },
-      {
-        title: 'Reviews',
-        to: 'reviews',
-      },
-    ],
-  },
-
   // Devices
   {
     title: 'Devices',
@@ -49,7 +12,7 @@ export const MenuList = [
       {
         title: 'Device List',
         to: 'device-list',
-      }
+      },
     ],
   },
 
@@ -66,7 +29,7 @@ export const MenuList = [
       {
         title: 'Client List',
         to: 'client-list',
-      }
+      },
     ],
   },
 
@@ -83,7 +46,7 @@ export const MenuList = [
       {
         title: 'Site List',
         to: 'site-list',
-      }
+      },
     ],
   },
 
@@ -100,7 +63,7 @@ export const MenuList = [
       {
         title: 'Facility List',
         to: 'facility-list',
-      }
+      },
     ],
   },
 ];
