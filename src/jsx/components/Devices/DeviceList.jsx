@@ -9,6 +9,7 @@ import {
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -141,6 +142,25 @@ const DeviceList = () => {
 
   const { globalFilter } = state;
 
+  const exportToExcel = () => {
+    const fileName = 'devices_export'; // Nombre del archivo
+    const exportData = data.map((row) => ({
+      Name: row.name,
+      Model: row.model,
+      Client: row.client_name,
+      location: row.location,
+      mode: row.mode,
+    }));
+
+    // Crear una hoja de cálculo
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Devices');
+
+    // Generar el archivo Excel
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  };
+
   return (
     <>
       <PageTitle activeMenu="Devices" motherMenu="Table" />
@@ -218,47 +238,56 @@ const DeviceList = () => {
             </table>
           </div>
           {/* Controles de paginación */}
-          <div className="pagination mt-3">
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <div className="pagination">
+              <button
+                onClick={() => gotoPage(0)}
+                disabled={!canPreviousPage}
+                className="btn btn-primary me-2"
+              >
+                {'<<'}
+              </button>
+              <button
+                onClick={() => previousPage()}
+                disabled={!canPreviousPage}
+                className="btn btn-primary me-2"
+              >
+                {'<'}
+              </button>
+              <button
+                onClick={() => nextPage()}
+                disabled={!canNextPage}
+                className="btn btn-primary me-2"
+              >
+                {'>'}
+              </button>
+              <button
+                onClick={() => gotoPage(pageCount - 1)}
+                disabled={!canNextPage}
+                className="btn btn-primary me-2"
+              >
+                {'>>'}
+              </button>
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="form-select ms-2"
+                style={{ width: 'auto' }}
+              >
+                {[10, 50, 100, 200].map((size) => (
+                  <option key={size} value={size}>
+                    Show {size}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Botón de exportación a Excel */}
             <button
-              onClick={() => gotoPage(0)}
-              disabled={!canPreviousPage}
-              className="btn btn-primary me-2"
+              onClick={exportToExcel}
+              className="me-1 btn btn-success light"
             >
-              {'<<'}
+              Excel
             </button>
-            <button
-              onClick={() => previousPage()}
-              disabled={!canPreviousPage}
-              className="btn btn-primary me-2"
-            >
-              {'<'}
-            </button>
-            <button
-              onClick={() => nextPage()}
-              disabled={!canNextPage}
-              className="btn btn-primary me-2"
-            >
-              {'>'}
-            </button>
-            <button
-              onClick={() => gotoPage(pageCount - 1)}
-              disabled={!canNextPage}
-              className="btn btn-primary me-2"
-            >
-              {'>>'}
-            </button>
-            <select
-              value={pageSize}
-              onChange={(e) => setPageSize(Number(e.target.value))}
-              className="form-select ms-2"
-              style={{ width: 'auto' }}
-            >
-              {[10, 50, 100, 200].map((size) => (
-                <option key={size} value={size}>
-                  Show {size}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
       </div>

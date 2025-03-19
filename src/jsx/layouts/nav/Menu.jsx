@@ -9,7 +9,7 @@ export const MenuList = [
   {
     title: 'Devices',
     classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-settings-2" />,
+    iconStyle: <i className="flaticon-381-binoculars" />,
     content: [
       {
         title: 'Add Device',
