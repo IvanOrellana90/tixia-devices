@@ -9,6 +9,7 @@ import {
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
 
 // Componente para el filtro por columna
@@ -27,6 +28,9 @@ const ColumnFilter = ({ column }) => {
 
 const DeviceList = () => {
   const [devices, setDevices] = useState([]);
+  const [showAlert, setShowAlert] = useState(false); // Controla la visibilidad de la alerta
+  const [locationInput, setLocationInput] = useState(''); // Almacena el location ingresado
+  const [deviceToDelete, setDeviceToDelete] = useState(null); // Almacena el dispositivo a eliminar
   const nav = useNavigate();
 
   useEffect(() => {
@@ -49,6 +53,44 @@ const DeviceList = () => {
 
     fetchDevices();
   }, []);
+
+  const handleDelete = (device) => {
+    setDeviceToDelete(device); // Guardar el dispositivo a eliminar
+    setShowAlert(true); // Mostrar la alerta
+  };
+
+  const confirmDelete = async () => {
+    if (locationInput === deviceToDelete.location) {
+      try {
+        const { error } = await supabase
+          .from('devices')
+          .delete()
+          .eq('id', deviceToDelete.id);
+
+        if (error) {
+          throw error;
+        }
+
+        // Actualizar el estado local eliminando el dispositivo
+        setDevices((prevDevices) =>
+          prevDevices.filter((device) => device.id !== deviceToDelete.id)
+        );
+
+        // Mostrar mensaje de éxito
+        toast.success('Device deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting device:', error.message);
+        toast.error('Error deleting device.');
+      }
+    } else {
+      toast.error('Incorrect location. Deletion canceled.');
+    }
+
+    // Cerrar la alerta y resetear los estados
+    setShowAlert(false);
+    setLocationInput('');
+    setDeviceToDelete(null);
+  };
 
   // Definición de columnas
   const COLUMNS = [
@@ -91,15 +133,26 @@ const DeviceList = () => {
       Header: 'Actions',
       accessor: 'actions',
       Cell: ({ row }) => (
-        <button
-          onClick={() => {
-            // Redirigir a la página de edición con el ID del dispositivo
-            nav(`/edit-device/${row.original.id}`);
-          }}
-          className="btn btn-primary btn-xs"
-        >
-          <i className="fa fa-edit" />
-        </button>
+        <div className="d-flex">
+          {/* Botón de editar */}
+          <button
+            onClick={() => {
+              // Redirigir a la página de edición con el ID del dispositivo
+              nav(`/edit-device/${row.original.id}`);
+            }}
+            className="btn btn-primary shadow btn-xs me-1"
+          >
+            <i className="fa fa-edit" />
+          </button>
+
+          {/* Botón de eliminar */}
+          <button
+            onClick={() => handleDelete(row.original)}
+            className="btn btn-danger shadow btn-xs"
+          >
+            <i className="fa fa-trash" />
+          </button>
+        </div>
       ),
       disableFilters: true,
     },
@@ -169,6 +222,42 @@ const DeviceList = () => {
           <h4 className="card-title">Device List</h4>
         </div>
         <div className="card-body">
+          {/* Alerta de confirmación */}
+          {showAlert && (
+            <div
+              role="alert"
+              className="fade notification alert alert-danger show mb-4"
+            >
+              <p className="notification-title mb-2">
+                <strong>Confirm Deletion</strong>
+              </p>
+              <p>
+                Please enter the location of the device to confirm deletion:
+              </p>
+              <input
+                type="text"
+                value={locationInput}
+                onChange={(e) => setLocationInput(e.target.value)}
+                className="form-control mb-2"
+                placeholder="Enter location"
+              />
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="btn btn-danger btn-sm me-2"
+              >
+                Confirm
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAlert(false)}
+                className="btn btn-link btn-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
           <div className="mb-3">
             <input
               type="text"
