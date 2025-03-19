@@ -2,14 +2,18 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 /// Image
 import profile from '../../../assets/images/profile/pic1.jpg';
 import { ThemeContext } from '../../../context/ThemeContext';
+import { toast } from 'react-toastify';
 
 const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
   const { background, changeBackground } = useContext(ThemeContext);
   const [userEmail, setUserEmail] = useState(null);
+
+  const navigate = useNavigate();
 
   // Obtener el email del usuario autenticado
   useEffect(() => {
@@ -24,6 +28,21 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
 
     fetchUser();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut(); // Cierra la sesión
+      if (error) {
+        throw error;
+      }
+      toast.succes('Sesión cerrada correctamente');
+      // Redirige al usuario a la página de login
+      navigate('/page-login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error.message);
+      toast.error('Error al cerrar sesión');
+    }
+  };
 
   function ChangeMode() {
     if (background.value === 'light') {
@@ -147,7 +166,11 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
                   className={`dropdown-menu dropdown-menu-right profile mt-2`}
                   align="end"
                 >
-                  <Link to="/page-login" className="dropdown-item ai-icon">
+                  <div
+                    onClick={handleLogout}
+                    className="dropdown-item ai-icon"
+                    style={{ cursor: 'pointer' }}
+                  >
                     <svg
                       id="icon-logout"
                       xmlns="http://www.w3.org/2000/svg"
@@ -165,8 +188,8 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
                       <polyline points="16 17 21 12 16 7" />
                       <line x1={21} y1={12} x2={9} y2={12} />
                     </svg>
-                    <span className="ms-2">Logout </span>
-                  </Link>
+                    <span className="ms-2">Logout</span>
+                  </div>
                 </Dropdown.Menu>
               </Dropdown>
             </ul>

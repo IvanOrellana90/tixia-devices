@@ -14446,7 +14446,7 @@ body:not([data-theme-version='dark']) .view-dark {
   z-index: 102;
 }
 .nav-header .logo-abbr {
-  max-width: 2.9375rem;
+  max-width: 2.5rem;
 }
 @media only screen and (max-width: 1400px) {
   .nav-header .logo-abbr {
@@ -14490,7 +14490,7 @@ body:not([data-theme-version='dark']) .view-dark {
 }
 .nav-header .brand-title {
   margin-right: 0.9375rem;
-  max-width: 8.75rem;
+  max-width: 8rem;
 }
 @media only screen and (max-width: 767px) {
   .nav-header .brand-title {

@@ -10,13 +10,13 @@
   z-index: 102;
 
   .logo-abbr {
-    max-width: 2.9375rem;
+    max-width: 2.5rem;
     @include respond('laptop') {
-      max-width: 2.8125rem;
+      max-width: 2.4rem;
     }
     @include respond('phone') {
-      width: 2.1875rem;
-      height: 2.1875rem;
+      width: 2rem;
+      height: 2rem;
     }
   }
   .logo-compact {
@@ -48,7 +48,7 @@
   }
   .brand-title {
     margin-#{$dz-pos-left}: 0.9375rem;
-    max-width: 8.75rem;
+    max-width: 8rem;
     @include respond('phone-land') {
       display: none;
     }

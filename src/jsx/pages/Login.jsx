@@ -84,7 +84,6 @@ const Login = () => {
                     />
                   </Link>
                 </div>
-                <h4 className="text-center mb-3">Sign in your account</h4>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={formik.handleSubmit}>
                   <div className="form-group mb-4">
