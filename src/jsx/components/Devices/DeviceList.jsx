@@ -1,5 +1,11 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { useTable, useSortBy, useGlobalFilter, useFilters } from 'react-table';
+import {
+  useTable,
+  useSortBy,
+  useGlobalFilter,
+  useFilters,
+  usePagination,
+} from 'react-table';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
@@ -101,6 +107,7 @@ const DeviceList = () => {
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => devices, [devices]);
 
+  // Configuración de react-table
   const {
     getTableProps,
     getTableBodyProps,
@@ -110,7 +117,27 @@ const DeviceList = () => {
     prepareRow,
     state,
     setGlobalFilter,
-  } = useTable({ columns, data }, useFilters, useGlobalFilter, useSortBy);
+    page, // Página actual
+    canPreviousPage, // ¿Se puede retroceder a la página anterior?
+    canNextPage, // ¿Se puede avanzar a la página siguiente?
+    pageOptions, // Opciones de página (número total de páginas)
+    pageCount, // Número total de páginas
+    gotoPage, // Ir a una página específica
+    nextPage, // Ir a la página siguiente
+    previousPage, // Ir a la página anterior
+    setPageSize, // Cambiar el tamaño de la página
+    state: { pageIndex, pageSize }, // Estado de la paginación
+  } = useTable(
+    {
+      columns,
+      data,
+      initialState: { pageIndex: 0, pageSize: 10 },
+    },
+    useFilters,
+    useGlobalFilter,
+    useSortBy,
+    usePagination
+  );
 
   const { globalFilter } = state;
 
@@ -170,7 +197,7 @@ const DeviceList = () => {
                 })}
               </thead>
               <tbody {...getTableBodyProps()}>
-                {rows.map((row) => {
+                {page.map((row) => {
                   prepareRow(row);
                   const { key, ...restRowProps } = row.getRowProps();
                   return (
@@ -188,26 +215,50 @@ const DeviceList = () => {
                   );
                 })}
               </tbody>
-              <tfoot>
-                {footerGroups.map((footerGroup) => {
-                  const { key, ...restFooterGroupProps } =
-                    footerGroup.getFooterGroupProps();
-                  return (
-                    <tr key={key} {...restFooterGroupProps}>
-                      {footerGroup.headers.map((column) => {
-                        const { key: columnKey, ...restColumnProps } =
-                          column.getFooterProps();
-                        return (
-                          <td key={columnKey} {...restColumnProps}>
-                            {column.render('Footer')}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tfoot>
             </table>
+          </div>
+          {/* Controles de paginación */}
+          <div className="pagination mt-3">
+            <button
+              onClick={() => gotoPage(0)}
+              disabled={!canPreviousPage}
+              className="btn btn-primary me-2"
+            >
+              {'<<'}
+            </button>
+            <button
+              onClick={() => previousPage()}
+              disabled={!canPreviousPage}
+              className="btn btn-primary me-2"
+            >
+              {'<'}
+            </button>
+            <button
+              onClick={() => nextPage()}
+              disabled={!canNextPage}
+              className="btn btn-primary me-2"
+            >
+              {'>'}
+            </button>
+            <button
+              onClick={() => gotoPage(pageCount - 1)}
+              disabled={!canNextPage}
+              className="btn btn-primary me-2"
+            >
+              {'>>'}
+            </button>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="form-select ms-2"
+              style={{ width: 'auto' }}
+            >
+              {[10, 50, 100, 200].map((size) => (
+                <option key={size} value={size}>
+                  Show {size}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
