@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
@@ -28,7 +28,7 @@ const deviceSchema = Yup.object().shape({
 });
 
 const EditDevice = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const navigate = useNavigate();
   const [device, setDevice] = useState(null);
   const [clients, setClients] = useState([]);
@@ -124,7 +124,6 @@ const EditDevice = () => {
       }
 
       toast.success('Device updated successfully!');
-      navigate('/device-list');
     } catch (error) {
       console.error('Error de Supabase:', error); // Depuración
       toast.error(`Error updating device: ${error.message}`);
@@ -139,17 +138,6 @@ const EditDevice = () => {
 
   return (
     <Fragment>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">

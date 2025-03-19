@@ -1,9 +1,8 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
-import 'react-toastify/dist/ReactToastify.css';
 
 // Esquema de validación con Yup
 const facilitySchema = Yup.object().shape({
@@ -11,31 +10,43 @@ const facilitySchema = Yup.object().shape({
     .min(3, 'Name must be at least 3 characters')
     .max(50, 'Name cannot exceed 50 characters')
     .required('Name is required'),
+  client_id: Yup.string().required('Client is required'),
   site_id: Yup.string().required('Site ID is required'),
   ksec_id: Yup.string().required('KSEC ID is required'),
 });
 
 const AddFacility = () => {
-    const [sites, setSites] = useState([]); // Estado para almacenar la lista de sitios con clientes
+  const [sites, setSites] = useState([]);
+  const [clients, setClients] = useState([]);
 
-    // Obtener la lista de sitios con los nombres de los clientes
-    useEffect(() => {
-      const fetchSites = async () => {
-        const { data, error } = await supabase.from('sites').select(`
-          id,
-          name,
-          clients (id, name)
-        `);
+  useEffect(() => {
+    const fetchClients = async () => {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name, url');
+      if (error) {
+        toast.error(`Error fetching clients: ${error.message}`);
+      } else {
+        setClients(data); // Guardar los clientes en el estado
+      }
+    };
 
-        if (error) {
-          console.error('Error fetching sites:', error.message);
-        } else {
-          setSites(data); // Guardar la lista de sitios en el estado
-        }
-      };
+    fetchClients();
+  }, []);
 
-      fetchSites();
-    }, []);
+  const fetchSites = async (clientId) => {
+    const { data, error } = await supabase
+      .from('sites')
+      .select('id, name, ksec_id')
+      .eq('client_id', clientId);
+
+    if (error) {
+      toast.error(`Error fetching sites: ${error.message}`);
+    } else {
+      setSites(data); // Guardar los sites en el estado
+    }
+  };
+
   // Función para enviar datos a Supabase
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
@@ -67,17 +78,6 @@ const AddFacility = () => {
 
   return (
     <Fragment>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">
@@ -87,11 +87,16 @@ const AddFacility = () => {
             <div className="card-body">
               <div className="form-validation">
                 <Formik
-                  initialValues={{ name: '', site_id: '', ksec_id: '' }}
+                  initialValues={{
+                    name: '',
+                    client_id: '',
+                    site_id: '',
+                    ksec_id: '',
+                  }}
                   validationSchema={facilitySchema}
                   onSubmit={handleSubmit}
                 >
-                  {({ isSubmitting }) => (
+                  {({ isSubmitting, values, setFieldValue }) => (
                     <Form>
                       <div className="row">
                         <div className="col-lg-6 mb-2">
@@ -116,18 +121,48 @@ const AddFacility = () => {
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
+                              Client <span className="required">*</span>
+                            </label>
+                            <Field
+                              as="select"
+                              name="client_id"
+                              className="form-control"
+                              onChange={(e) => {
+                                setFieldValue('client_id', e.target.value);
+                                setFieldValue('site_id', ''); // Resetear site_id
+                                fetchSites(e.target.value); // Obtener sites filtrados
+                              }}
+                            >
+                              <option value="">Select a Client</option>
+                              {clients.map((client) => (
+                                <option key={client.id} value={client.id}>
+                                  {client.name}
+                                </option>
+                              ))}
+                            </Field>
+                            <ErrorMessage
+                              name="client_id"
+                              component="div"
+                              className="text-danger"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="col-lg-6 mb-2">
+                          <div className="form-group mb-3">
+                            <label className="text-label">
                               Site <span className="required">*</span>
                             </label>
                             <Field
-                              as="select" // Usar un select box
+                              as="select"
                               name="site_id"
                               className="form-control"
+                              disabled={!values.client_id}
                             >
                               <option value="">Select a site</option>
                               {sites.map((site) => (
                                 <option key={site.id} value={site.id}>
-                                  {site.name} - {site.clients.name}{' '}
-                                  {/* Mostrar site_name - client_name */}
+                                  {site.name}
                                 </option>
                               ))}
                             </Field>

@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useTable, useSortBy, useGlobalFilter, useFilters } from 'react-table';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
+import { useNavigate } from 'react-router-dom';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -17,74 +18,88 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
-// Definición de columnas
-const COLUMNS = [
-  {
-    Header: 'Unique ID',
-    accessor: 'unique_id', // Accede a la propiedad "unique_id" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Model',
-    accessor: 'model', // Accede a la propiedad "model" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Client',
-    accessor: 'client_name', // Accede a la propiedad "client_name" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Site KSEC ID',
-    accessor: 'site_ksec_id', // Accede a la propiedad "site_ksec_id" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Facility KSEC ID',
-    accessor: 'facility_ksec_id', // Accede a la propiedad "facility_ksec_id" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Location',
-    accessor: 'location', // Accede a la propiedad "location" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'Mode',
-    accessor: 'mode', // Accede a la propiedad "mode" de cada dispositivo
-    Filter: ColumnFilter, // Filtro por columna
-  },
-];
-
 const DeviceList = () => {
-  const [devices, setDevices] = useState([]); // Estado para almacenar la lista de dispositivos
+  const [devices, setDevices] = useState([]);
+  const nav = useNavigate();
 
-  // Obtener la lista de dispositivos desde Supabase
   useEffect(() => {
     const fetchDevices = async () => {
       const { data, error } = await supabase.from('devices').select(`
         *,
         clients (name)
-      `); // Seleccionar todas las columnas de la tabla "devices" y el nombre del cliente
+      `);
 
       if (error) {
         console.error('Error fetching devices:', error.message);
       } else {
-        // Mapear los datos para incluir el nombre del cliente
         const devicesWithClientName = data.map((device) => ({
           ...device,
           client_name: device.clients.name,
         }));
-        setDevices(devicesWithClientName); // Guardar la lista de dispositivos en el estado
+        setDevices(devicesWithClientName);
       }
     };
 
     fetchDevices();
   }, []);
 
-  // Configuración de react-table
+  // Definición de columnas
+  const COLUMNS = [
+    {
+      Header: 'Unique ID',
+      accessor: 'unique_id',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Model',
+      accessor: 'model',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Client',
+      accessor: 'client_name',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Site KSEC ID',
+      accessor: 'site_ksec_id',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Facility KSEC ID',
+      accessor: 'facility_ksec_id',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Location',
+      accessor: 'location',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Mode',
+      accessor: 'mode',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Actions',
+      accessor: 'actions',
+      Cell: ({ row }) => (
+        <button
+          onClick={() => {
+            // Redirigir a la página de edición con el ID del dispositivo
+            nav(`/edit-device/${row.original.id}`);
+          }}
+          className="btn btn-primary btn-xs"
+        >
+          <i className="fa fa-edit" />
+        </button>
+      ),
+      disableFilters: true,
+    },
+  ];
+
   const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => devices, [devices]); // Usar los datos de Supabase
+  const data = useMemo(() => devices, [devices]);
 
   const {
     getTableProps,
@@ -107,7 +122,6 @@ const DeviceList = () => {
           <h4 className="card-title">Device List</h4>
         </div>
         <div className="card-body">
-          {/* Campo de búsqueda global */}
           <div className="mb-3">
             <input
               type="text"
@@ -143,7 +157,6 @@ const DeviceList = () => {
                                 ''
                               )}
                             </span>
-                            {/* Filtro por columna */}
                             <div>
                               {column.canFilter
                                 ? column.render('Filter')

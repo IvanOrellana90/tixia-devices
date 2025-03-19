@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -54,17 +54,6 @@ const AddClient = () => {
 
   return (
     <Fragment>
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">

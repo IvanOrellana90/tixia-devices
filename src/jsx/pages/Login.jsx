@@ -4,6 +4,7 @@ import { IMAGES } from '../content/theme';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { supabase } from '../supabase/client';
+import { toast } from 'react-toastify';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -28,7 +29,7 @@ const Login = () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         sessionStorage.setItem('user', JSON.stringify(data.session.user));
-        nav('/dashboard');
+        nav('/');
       }
     };
     checkSession();
@@ -41,13 +42,28 @@ const Login = () => {
       try {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: 'http://localhost:5173/dashboard' },
+          options: { emailRedirectTo: 'https://ksec-devices.netlify.app/' },
         });
 
         if (error) throw error;
-        alert('Revisa tu correo para el enlace mágico!');
+
+        // Mostrar toast de éxito
+        toast.success('¡Revisa tu correo para el enlace de ingreso!', {
+          position: 'top-right',
+          autoClose: 5000,
+          closeOnClick: true,
+          pauseOnHover: true,
+        });
       } catch (error) {
         setError(error.message);
+
+        // Mostrar toast de error
+        toast.error(`Error: ${error.message}`, {
+          position: 'top-right',
+          autoClose: 5000,
+          closeOnClick: true,
+          pauseOnHover: true,
+        });
       }
     },
   });
