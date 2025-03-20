@@ -14,6 +14,11 @@ import Footer from './layouts/Footer';
 import ScrollToTop from './layouts/ScrollToTop';
 import { ThemeContext } from '../context/ThemeContext';
 
+// Dashboard
+import Overview from './components/Dashboard/OverviewCard';
+import OverviewTab from './components/Dashboard/Tabs/OverviewTab';
+import ActivityTab from './components/Dashboard/Tabs/ActivityTab';
+
 // Client
 import AddClient from './components/Clients/AddClient';
 import ClientList from './components/Clients/ClientList';
@@ -37,6 +42,11 @@ import Error404 from './pages/Error404';
 
 const Markup = () => {
   const allroutes = [
+    // Dashboard
+    { url: 'dashboard', component: <Overview /> },
+    { url: 'dashboard-overview', component: <OverviewTab /> },
+    { url: 'dashboard-activity', component: <ActivityTab /> },
+
     //Clients
     { url: 'add-client', component: <AddClient /> },
     { url: 'client-list', component: <ClientList /> },
@@ -65,7 +75,7 @@ const Markup = () => {
         {/* Rutas protegidas */}
         <Route element={<PrivateRoute />}>
           <Route element={<MainLayout2 />}>
-            <Route path="/" element={<DeviceList />} />
+            <Route path="/" element={<Overview />} />
           </Route>
           <Route element={<MainLayout />}>
             {allroutes.map((data, i) => (

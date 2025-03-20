@@ -54379,6 +54379,7 @@ code {
   border-radius: 20px;
   opacity: 0.05;
   left: 60px;
+  margin-left: 120px;
 }
 
 .widget-timeline-status .timeline-badge {
@@ -54390,11 +54391,13 @@ code {
   position: absolute;
   left: 55px;
   top: 4px;
+  margin-left: 120px;
 }
 
 .widget-timeline-status .timeline-panel {
   padding-left: 20px;
   position: relative;
+  margin-left: 120px;
 }
 
 .widget-timeline-icons .timeline-media {
