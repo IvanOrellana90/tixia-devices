@@ -5,7 +5,7 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   try {
     const { unique_id } = event.queryStringParameters;
 
@@ -47,7 +47,7 @@ exports.handler = async (event) => {
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error interno del servidor' }),
+      body: JSON.stringify({ error: 'Error interno del servidor ' + err }),
     };
   }
 };
