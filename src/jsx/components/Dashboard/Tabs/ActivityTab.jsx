@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../../supabase/client';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 const ActivityTab = () => {
   const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,6 +24,7 @@ const ActivityTab = () => {
     const { data, error } = await supabase
       .from('logs')
       .select('*')
+      .not('user_email', 'is', null)
       .order('created_at', { ascending: false })
       .limit(10);
 
@@ -29,6 +32,44 @@ const ActivityTab = () => {
       toast.error(`Error fetching logs: ${error.message}`);
     } else {
       return data;
+    }
+  };
+
+  const exportToExcel = async () => {
+    try {
+      // Obtener todos los logs de la base de datos
+      const { data: logsData, error } = await supabase
+        .from('logs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        toast.error(`Error fetching logs for export: ${error.message}`);
+        return;
+      }
+
+      // Formatear los datos para Excel
+      const formattedData = logsData.map((log) => ({
+        ID: log.id,
+        Table: log.table_name,
+        Action: log.action,
+        'Record ID': log.record_id,
+        'Old Data': JSON.stringify(log.old_data),
+        'New Data': JSON.stringify(log.new_data),
+        'User Email': log.user_email,
+        'Created At': new Date(log.created_at).toLocaleString(),
+      }));
+
+      // Crear una hoja de cálculo
+      const worksheet = XLSX.utils.json_to_sheet(formattedData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Logs');
+
+      // Generar y descargar el archivo Excel
+      XLSX.writeFile(workbook, 'logs_export.xlsx');
+      toast.success('Logs exported successfully!');
+    } catch (err) {
+      toast.error(`Error exporting logs: ${err.message}`);
     }
   };
 
@@ -154,6 +195,12 @@ const ActivityTab = () => {
         <div className="card">
           <div className="card-header">
             <h4 className="card-title mb-0">Last Activity</h4>
+            <button
+              onClick={exportToExcel}
+              className="me-1 btn btn-outline-success btn-rounded btn-sm"
+            >
+              Excel
+            </button>
           </div>
           <div className="card-body">
             <div className="widget-timeline-status">

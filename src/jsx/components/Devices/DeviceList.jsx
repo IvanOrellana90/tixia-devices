@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import {
   useTable,
   useSortBy,
@@ -11,6 +11,7 @@ import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
+import { Version } from 'sass';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -130,6 +131,24 @@ const DeviceList = () => {
       Filter: ColumnFilter,
     },
     {
+      Header: 'State',
+      accessor: 'active',
+      Filter: ColumnFilter,
+      Cell: ({ value }) => (
+        <div className="d-flex align-items-center">
+          <i
+            className={`fa fa-circle me-2 ${value ? 'text-success' : 'text-danger'}`}
+          ></i>
+          {value ? 'Active' : 'Inactive'}
+        </div>
+      ),
+    },
+    {
+      Header: 'Version',
+      accessor: 'version_name',
+      Filter: ColumnFilter,
+    },
+    {
       Header: 'Actions',
       accessor: 'actions',
       Cell: ({ row }) => (
@@ -201,8 +220,10 @@ const DeviceList = () => {
       Name: row.name,
       Model: row.model,
       Client: row.client_name,
-      location: row.location,
-      mode: row.mode,
+      Location: row.location,
+      Mode: row.mode,
+      Version: row.version_name,
+      Active: row.active ? 'Active' : 'Inactive',
     }));
 
     // Crear una hoja de cálculo
@@ -373,7 +394,7 @@ const DeviceList = () => {
             {/* Botón de exportación a Excel */}
             <button
               onClick={exportToExcel}
-              className="me-1 btn btn-success light"
+              className="me-1 btn btn-outline-success btn-rounded btn-sm"
             >
               Excel
             </button>
