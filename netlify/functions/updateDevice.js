@@ -6,7 +6,7 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
   const { unique_id, version_name } = event.queryStringParameters;
 
   if (!unique_id || !version_name) {

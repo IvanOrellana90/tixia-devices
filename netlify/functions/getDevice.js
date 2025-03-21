@@ -5,7 +5,7 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
   try {
     const { unique_id } = event.queryStringParameters;
 
