@@ -52,6 +52,7 @@ function DashboardOverviewCard() {
                     model,
                     updated_at,
                     created_at,
+                    active,
                     client:client_id (name)
                 `);
       if (error) toast.error(`Error fetching devices: ${error.message}`);
