@@ -42,20 +42,18 @@ const DevicesChart = () => {
     devices.forEach((device) => {
       const createdAt = new Date(device.created_at);
       const monthYear = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`; // Formato: YYYY-MM
-      const mode = device.mode; // Obtener el tipo de dispositivo (pda, kiosk, torniquet)
+      const mode = device.mode; // Obtener el tipo de dispositivo (pda, kiosk, tourniquet)
 
       if (!monthlyCounts[monthYear]) {
-        monthlyCounts[monthYear] = { pda: 0, kiosk: 0, torniquet: 0 }; // Inicializar contadores para cada tipo
+        monthlyCounts[monthYear] = { pda: 0, kiosk: 0, tourniquet: 0 }; // Inicializar contadores para cada tipo
       }
-
-      console.log(mode);
 
       if (mode.toLowerCase() === 'pda') {
         monthlyCounts[monthYear].pda++;
       } else if (mode.toLowerCase() === 'kiosk') {
         monthlyCounts[monthYear].kiosk++;
-      } else if (mode.toLowerCase() === 'torniquet') {
-        monthlyCounts[monthYear].torniquet++;
+      } else if (mode.toLowerCase() === 'tourniquet') {
+        monthlyCounts[monthYear].tourniquet++;
       }
     });
 
@@ -95,9 +93,9 @@ const DevicesChart = () => {
           <Line type="monotone" dataKey="kiosk" stroke="#82ca9d" name="Kiosk" />
           <Line
             type="monotone"
-            dataKey="torniquet"
+            dataKey="tourniquet"
             stroke="#ff8042"
-            name="Torniquet"
+            name="Tourniquet"
           />
         </LineChart>
       </ResponsiveContainer>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../supabase/client';
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
 const ActivityTab = () => {
   const [logs, setLogs] = useState([]);
@@ -31,6 +32,37 @@ const ActivityTab = () => {
     }
   };
 
+  const getAdditionalInfo = (data, email) => {
+    if (data.name) {
+      return (
+        <>
+          <br />
+          <span className="font-monospace">Name: {data.name}</span>
+          {email && (
+            <>
+              <br />
+              <span className="text-warning">{email}</span>
+            </>
+          )}
+        </>
+      );
+    } else if (data.location) {
+      return (
+        <>
+          <br />
+          <span className="font-monospace">Location: {data.location}</span>
+          {email && (
+            <>
+              <br />
+              <span className="text-warning">{email}</span>
+            </>
+          )}
+        </>
+      );
+    }
+    return null;
+  };
+
   const processLogs = (logs) => {
     return logs.map((log) => {
       const {
@@ -41,7 +73,9 @@ const ActivityTab = () => {
         old_data,
         new_data,
         created_at,
+        user_email,
       } = log;
+
       const date = new Date(created_at);
       const formattedDate = date.toLocaleString('es-CL', {
         year: 'numeric',
@@ -58,32 +92,47 @@ const ActivityTab = () => {
         case 'INSERT':
           message = (
             <>
-              Se creó un nuevo registro en la tabla{' '}
-              <strong>{table_name}</strong>.
+              A new record was created in the table{' '}
+              <Link to={`/${table_name}`} className="text-info">
+                {table_name}
+              </Link>
+              .{getAdditionalInfo(new_data, user_email)}
             </>
           );
           badgeClass = 'border-success';
           break;
+
         case 'UPDATE':
           message = (
             <>
-              Se actualizó un registro en la tabla <strong>{table_name}</strong>.
+              A record was updated in the table{' '}
+              <Link to={`/${table_name}`} className="text-info">
+                {table_name}
+              </Link>
+              {getAdditionalInfo(new_data, user_email)}
             </>
           );
           badgeClass = 'border-info';
           break;
+
         case 'DELETE':
           message = (
             <>
-              Se eliminó un registro de la tabla <strong>{table_name}</strong>.
+              A record was deleted from the table{' '}
+              <Link to={`/${table_name}`} className="text-info">
+                {table_name}
+              </Link>
+              {getAdditionalInfo(old_data, user_email)}
             </>
           );
           badgeClass = 'border-danger';
           break;
+
         default:
           message = (
             <>
-              Acción desconocida en la tabla <strong>{table_name}</strong> (ID:{' '}
+              Unknown action in the table{' '}
+              <span className="text-info">{table_name}</span> (ID:{' '}
               <strong>{record_id}</strong>).
             </>
           );
@@ -114,7 +163,7 @@ const ActivityTab = () => {
                     <span className="timeline-status">{log.date}</span>
                     <div className={`timeline-badge ${log.badgeClass}`}></div>
                     <div className="timeline-panel">
-                      <span className="fs-14 fw-semibold">{log.message}</span>
+                      <span className="fs-14">{log.message}</span>
                     </div>
                   </li>
                 ))}

@@ -50,18 +50,22 @@ const Markup = () => {
     //Clients
     { url: 'add-client', component: <AddClient /> },
     { url: 'client-list', component: <ClientList /> },
+    { url: 'clients', component: <ClientList /> },
 
     //Sites
     { url: 'add-site', component: <AddSite /> },
     { url: 'site-list', component: <SiteList /> },
+    { url: 'sites', component: <SiteList /> },
 
     //Facility
     { url: 'add-facility', component: <AddFacility /> },
     { url: 'facility-list', component: <FacilityList /> },
+    { url: 'facilities', component: <FacilityList /> },
 
     //Device
     { url: 'add-device', component: <AddDevice /> },
     { url: 'device-list', component: <DeviceList /> },
+    { url: 'devices', component: <DeviceList /> },
     { url: 'edit-device/:id', component: <EditDevice /> },
   ];
 
