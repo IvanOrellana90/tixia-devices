@@ -11,7 +11,7 @@ import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import { Version } from 'sass';
+import { Cell } from 'recharts';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -36,19 +36,28 @@ const DeviceList = () => {
 
   useEffect(() => {
     const fetchDevices = async () => {
-      const { data, error } = await supabase.from('devices').select(`
+      const { data, error } = await supabase
+        .from('devices')
+        .select(
+          `
         *,
-        clients (name)
-      `);
+        clients:client_id (name),
+        facility:facility_id (name),
+        site:site_id (name)
+      `
+        )
+        .order('activated_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching devices:', error.message);
       } else {
-        const devicesWithClientName = data.map((device) => ({
+        const devicesWithNames = data.map((device) => ({
           ...device,
           client_name: device.clients.name,
+          facility_name: device.facility?.name || '',
+          site_name: device.site?.name || '',
         }));
-        setDevices(devicesWithClientName);
+        setDevices(devicesWithNames);
       }
     };
 
@@ -99,6 +108,11 @@ const DeviceList = () => {
       Header: 'Unique ID',
       accessor: 'unique_id',
       Filter: ColumnFilter,
+      Cell: ({ row }) => (
+        <a href={`/device/${row.original.id}`} className="text-primary">
+          {row.original.unique_id}
+        </a>
+      ),
     },
     {
       Header: 'Model',
@@ -112,12 +126,12 @@ const DeviceList = () => {
     },
     {
       Header: 'Site KSEC ID',
-      accessor: 'site_ksec_id',
+      accessor: 'site_name',
       Filter: ColumnFilter,
     },
     {
       Header: 'Facility KSEC ID',
-      accessor: 'facility_ksec_id',
+      accessor: 'facility_name',
       Filter: ColumnFilter,
     },
     {
@@ -221,6 +235,8 @@ const DeviceList = () => {
       Model: row.model,
       Client: row.client_name,
       Location: row.location,
+      Site: row.site_name,
+      Facility: row.facility_name,
       Mode: row.mode,
       Version: row.version_name,
       Active: row.active ? 'Active' : 'Inactive',

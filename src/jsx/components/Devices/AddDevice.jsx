@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import 'react-toastify/dist/ReactToastify.css';
+import PageTitle from '../../layouts/PageTitle';
 
 // Esquema de validación con Yup para dispositivos
 const deviceSchema = Yup.object().shape({
@@ -51,7 +52,7 @@ const AddDevice = () => {
   const fetchSites = async (clientId) => {
     const { data, error } = await supabase
       .from('sites')
-      .select('id, name, ksec_id')
+      .select('id, client_id, name, ksec_id')
       .eq('client_id', clientId);
 
     if (error) {
@@ -65,7 +66,7 @@ const AddDevice = () => {
   const fetchFacilities = async (siteId) => {
     const { data, error } = await supabase
       .from('facilities')
-      .select('id, name, ksec_id')
+      .select('id, site_id, name, ksec_id')
       .eq('site_id', siteId);
 
     if (error) {
@@ -78,12 +79,29 @@ const AddDevice = () => {
   // Función para enviar datos a Supabase
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      const selectedSite = sites.find(
+        (site) =>
+          site.ksec_id === parseInt(values.site_ksec_id, 10) &&
+          site.client_id === parseInt(values.client_id, 10)
+      );
+
+      let selectedFacility = null;
+      if (selectedSite) {
+        selectedFacility = facilities.find(
+          (facility) =>
+            facility.ksec_id === parseInt(values.facility_ksec_id, 10) &&
+            facility.site_id === selectedSite.id
+        );
+      }
+
       // Limpiar espacios en blanco con trim()
       const cleanedValues = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
         client_id: values.client_id.trim(),
+        site_id: selectedSite.id,
         site_ksec_id: values.site_ksec_id.trim(),
+        facility_id: selectedFacility ? selectedFacility.id : null,
         facility_ksec_id: values.facility_ksec_id.trim() || null,
         location: values.location.trim(),
         mode: values.mode.trim(),
@@ -104,6 +122,7 @@ const AddDevice = () => {
       resetForm(); // Limpiar el formulario después de guardar
     } catch (error) {
       // Mostrar mensaje de error con react-toastify
+      console.error(error);
       toast.error(`Error creating device: ${error.message}`);
     } finally {
       setSubmitting(false);
@@ -112,6 +131,7 @@ const AddDevice = () => {
 
   return (
     <Fragment>
+      <PageTitle activeMenu="Add Device" motherMenu="Device" />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">

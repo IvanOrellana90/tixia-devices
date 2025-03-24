@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
+import PageTitle from '../../layouts/PageTitle';
 
 // Esquema de validación con Yup
 const facilitySchema = Yup.object().shape({
@@ -78,6 +79,7 @@ const AddFacility = () => {
 
   return (
     <Fragment>
+      <PageTitle activeMenu="Add Facility" motherMenu="Facility" />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">

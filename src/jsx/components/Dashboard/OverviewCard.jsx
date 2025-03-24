@@ -92,8 +92,7 @@ function DashboardOverviewCard() {
 
       <Fragment>
         <div className="row">
-          <div className="col-xl-3 col-xxl-4 col-lg-6 col-sm-6"></div>
-          <div className="col-xl-3 col-xxl-4 col-lg-6 col-sm-6">
+          <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos activos */}
             <div
               role="alert"
@@ -119,7 +118,7 @@ function DashboardOverviewCard() {
               </div>
             </div>
           </div>
-          <div className="col-xl-3 col-xxl-4 col-lg-6 col-sm-6">
+          <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos inactivos */}
             <div
               role="alert"

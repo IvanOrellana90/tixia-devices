@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import 'react-toastify/dist/ReactToastify.css';
+import PageTitle from '../../layouts/PageTitle';
 
 // Esquema de validación con Yup
 const clientSchema = Yup.object().shape({
@@ -54,6 +55,7 @@ const AddClient = () => {
 
   return (
     <Fragment>
+      <PageTitle activeMenu="Add Client" motherMenu="Client" />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">
