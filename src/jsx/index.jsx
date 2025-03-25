@@ -35,6 +35,7 @@ import FacilityList from './components/Facilities/FacilityList';
 import AddDevice from './components/Devices/AddDevice';
 import DeviceList from './components/Devices/DeviceList';
 import EditDevice from './components/Devices/EditDevice';
+import DeviceDetail from './components/Devices/DeviceDetail';
 
 // Pages
 import Login from './pages/Login';
@@ -67,6 +68,7 @@ const Markup = () => {
     { url: 'device-list', component: <DeviceList /> },
     { url: 'devices', component: <DeviceList /> },
     { url: 'edit-device/:id', component: <EditDevice /> },
+    { url: 'device/:id', component: <DeviceDetail /> },
   ];
 
   return (

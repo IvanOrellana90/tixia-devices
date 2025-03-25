@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import 'react-toastify/dist/ReactToastify.css';
+import PageTitle from '../../layouts/PageTitle';
 
 // Esquema de validación con Yup
 const siteSchema = Yup.object().shape({
@@ -65,6 +66,7 @@ const AddSite = () => {
 
   return (
     <Fragment>
+      <PageTitle activeMenu="Add Site" motherMenu="Site" />
       <div className="row">
         <div className="col-lg-12">
           <div className="card">
