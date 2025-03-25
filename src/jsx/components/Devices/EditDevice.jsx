@@ -104,9 +104,9 @@ const EditDevice = () => {
       const cleanedValues = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
-        client_id: values.client_id.trim(),
-        site_ksec_id: values.site_ksec_id.trim(),
-        facility_ksec_id: values.facility_ksec_id.trim() || null,
+        client_id: values.client_id,
+        site_ksec_id: values.site_ksec_id,
+        facility_ksec_id: values.facility_ksec_id || null,
         location: values.location.trim(),
         mode: values.mode.trim(), // Asegúrate de que sea 'Tourniquet', 'Kiosk', o 'PDA'
       };
