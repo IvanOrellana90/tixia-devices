@@ -209,7 +209,7 @@ function DashboardOverviewCard() {
                       <h5 className="mb-1">
                         <Link
                           className="text-black"
-                          to={`/device-details/${device.id}`}
+                          to={`/device/${device.id}`}
                         >
                           {device.location}
                         </Link>

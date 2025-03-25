@@ -4,8 +4,11 @@ import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faMobile,
+  faMapPin,
   faMobileScreenButton,
+  faCircleCheck,
+  faCircleXmark,
+  faClock,
 } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment/moment';
 
@@ -17,92 +20,123 @@ const DeviceDetail = () => {
     const fetchDevice = async () => {
       const { data, error } = await supabase
         .from('devices')
-        .select('*')
+        .select(
+          `*,
+          client:client_id (name)
+          `
+        )
         .eq('id', id)
         .single();
       if (error) console.error('Error fetching device:', error.message);
-      console.log('Device:', data);
       setDevice(data);
     };
     fetchDevice();
   }, [id]);
 
+  // Función para determinar si el dispositivo está activo
+  const isDeviceActive = () => {
+    if (!device?.active_at) return false;
+    const lastActive = moment(device.active_at);
+    const now = moment();
+    return now.diff(lastActive, 'minutes') < 15; // Considerar activo si se conectó en los últimos 15 minutos
+  };
+
+  // Función para renderizar el estado del dispositivo
+  const renderDeviceStatus = () => {
+    if (!device) return null;
+
+    if (isDeviceActive()) {
+      return (
+        <div
+          role="alert"
+          className="fade alert alert-success alert-dismissible show"
+        >
+          <FontAwesomeIcon icon={faCircleCheck} className="me-2" />
+          <strong>Active Device</strong>
+          <div className="small mt-1">
+            Last connection:{' '}
+            {moment(device.activated_at).format('DD MMM YYYY, h:mm A')}
+          </div>
+        </div>
+      );
+    } else if (device.activated_at) {
+      return (
+        <div
+          role="alert"
+          className="fade alert alert-warning alert-dismissible show"
+        >
+          <FontAwesomeIcon icon={faClock} className="me-2" />
+          <strong>Inactive Device</strong>
+          <div className="small mt-1">
+            Last connection:{' '}
+            {moment(device.activated_at).format('DD MMM YYYY, h:mm A')}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div
+          role="alert"
+          className="fade alert alert-danger alert-dismissible show"
+        >
+          <FontAwesomeIcon icon={faCircleXmark} className="me-2" />
+          <strong>Device Never Connected</strong>
+          <div className="small mt-1">
+            Created: {moment(device.created_at).format('DD MMM YYYY, h:mm A')}
+          </div>
+        </div>
+      );
+    }
+  };
+
   return (
     <Fragment>
       <PageTitle activeMenu="Device Detail" motherMenu="Devices" />
+
+      {/* Main Card */}
       <div className="row">
         <div className="col-xl-12 col-xxl-12 col-sm-12">
           <div className="card">
             <div className="card-body">
-              <div className="clearfix pe-md-5">
-                <h3 className="display-6 mb-2">{device.location}</h3>
+              <div className="row">
+                {/* Device Info */}
+                <div className="col-md-9">
+                  <div className="clearfix pe-md-5">
+                    <h3 className="display-6 mb-2">{device?.location}</h3>
+                    <ul className="d-flex flex-column fs-6">
+                      <li className="mb-2 d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faMapPin}
+                          className="las la-user me-1 fs-18"
+                        />
+                        {device?.client?.name}
+                      </li>
+                      <li className="mb-2 d-flex align-items-center">
+                        <FontAwesomeIcon
+                          icon={faMobileScreenButton}
+                          className="las la-user me-1 fs-18"
+                        />
+                        {device?.model}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
 
-                <ul className="d-flex flex-wrap fs-6 align-items-center">
-                  <li className="me-3 d-inline-flex align-items-center">
-                    <FontAwesomeIcon
-                      icon={faMobileScreenButton}
-                      className="las la-user me-1 fs-18"
-                    />
-                    {device?.model}
-                  </li>
-                </ul>
+                {/* Actions and Status */}
+                <div className="col-md-3">
+                  <div className="clearfix mt-3 mt-xl-0 ms-auto d-flex flex-column">
+                    <div className="clearfix mb-3 text-xl-center">
+                      {renderDeviceStatus()}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div className="row">
-        <div className="col-xl-3 col-xxl-4 col-sm-6">
-          <div className="card">
-            <div className="card-body">
-              {/* Encabezado con logo y título */}
-              <div className="clearfix d-flex">
-                <div className="clearfix">
-                  <h6 className="mb-0 fw-semibold">Time online</h6>
-                  <span className="text-muted fs-13">
-                    There are many variations
-                  </span>
-                </div>
-              </div>
 
-              {/* Descripción */}
-              <p className="my-3">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
-              </p>
-
-              {/* Progreso */}
-              <div className="mt-3">
-                <div className="d-flex justify-content-between">
-                  <span className="fw-medium">Project Complete</span>
-                  <span>60%</span>
-                </div>
-                <div className="progress mt-2">
-                  <div
-                    className="progress-bar bg-success"
-                    style={{ width: '60%', borderRadius: '4px' }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-
-            {/* Pie de tarjeta */}
-            <div className="card-footer d-flex justify-content-between flex-wrap">
-              <div className="due-progress mb-0">
-                <p className="mb-0">
-                  Create at
-                  <span className="text-purple">
-                    : {moment(device?.created_at).format('DD MMM YYYY, h:mm A')}
-                  </span>
-                </p>
-              </div>
-              <span className="badge badge-sm light border-0 badge-primary">
-                In Progress
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Stats Card */}
     </Fragment>
   );
 };
