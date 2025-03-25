@@ -101,14 +101,31 @@ const EditDevice = () => {
   // Función para actualizar el dispositivo
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      const selectedSite = sites.find(
+        (site) =>
+          site.ksec_id === parseInt(values.site_ksec_id, 10) &&
+          site.client_id === parseInt(values.client_id, 10)
+      );
+
+      let selectedFacility = null;
+      if (selectedSite) {
+        selectedFacility = facilities.find(
+          (facility) =>
+            facility.ksec_id === parseInt(values.facility_ksec_id, 10) &&
+            facility.site_id === selectedSite.id
+        );
+      }
+
       const cleanedValues = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
-        client_id: values.client_id,
-        site_ksec_id: values.site_ksec_id,
-        facility_ksec_id: values.facility_ksec_id || null,
+        client_id: values.client_id.trim(),
+        site_id: selectedSite.id,
+        site_ksec_id: values.site_ksec_id.trim(),
+        facility_id: selectedFacility ? selectedFacility.id : null,
+        facility_ksec_id: values.facility_ksec_id.trim() || null,
         location: values.location.trim(),
-        mode: values.mode.trim(), // Asegúrate de que sea 'Tourniquet', 'Kiosk', o 'PDA'
+        mode: values.mode.trim(),
       };
 
       console.log('Valores enviados:', cleanedValues); // Depuración
