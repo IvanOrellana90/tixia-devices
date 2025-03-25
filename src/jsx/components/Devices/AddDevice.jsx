@@ -3,10 +3,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
+import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import PageTitle from '../../layouts/PageTitle';
 
-// Esquema de validación con Yup para dispositivos
 const deviceSchema = Yup.object().shape({
   unique_id: Yup.string()
     .min(3, 'Unique ID must be at least 3 characters')
@@ -28,102 +28,119 @@ const deviceSchema = Yup.object().shape({
 });
 
 const AddDevice = () => {
-  const [clients, setClients] = useState([]); // Estado para almacenar la lista de clientes
-  const [sites, setSites] = useState([]); // Estado para almacenar la lista de sites
-  const [facilities, setFacilities] = useState([]); // Estado para almacenar la lista de facilities
+  const navigate = useNavigate();
+  const [clients, setClients] = useState([]);
+  const [sites, setSites] = useState([]);
+  const [facilities, setFacilities] = useState([]);
 
-  // Obtener la lista de clientes al cargar el componente
   useEffect(() => {
     const fetchClients = async () => {
       const { data, error } = await supabase
         .from('clients')
         .select('id, name, url');
+
       if (error) {
         toast.error(`Error fetching clients: ${error.message}`);
       } else {
-        setClients(data); // Guardar los clientes en el estado
+        setClients(data);
       }
     };
 
     fetchClients();
   }, []);
 
-  // Función para obtener los sites filtrados por client_id
   const fetchSites = async (clientId) => {
+    if (!clientId) {
+      setSites([]);
+      setFacilities([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('sites')
-      .select('id, client_id, name, ksec_id')
+      .select('id, name, ksec_id, client_id')
       .eq('client_id', clientId);
 
     if (error) {
       toast.error(`Error fetching sites: ${error.message}`);
     } else {
-      setSites(data); // Guardar los sites en el estado
+      setSites(data);
+      setFacilities([]); // Reset facilities when sites change
     }
   };
 
-  // Función para obtener los facilities filtrados por site_ksec_id
   const fetchFacilities = async (siteId) => {
+    if (!siteId) {
+      setFacilities([]);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('facilities')
-      .select('id, site_id, name, ksec_id')
+      .select('id, name, ksec_id, site_id')
       .eq('site_id', siteId);
 
     if (error) {
       toast.error(`Error fetching facilities: ${error.message}`);
     } else {
-      setFacilities(data); // Guardar los facilities en el estado
+      setFacilities(data);
     }
   };
 
-  // Función para enviar datos a Supabase
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      // Validar que el sitio pertenece al cliente seleccionado
       const selectedSite = sites.find(
-        (site) =>
-          site.ksec_id === parseInt(values.site_ksec_id, 10) &&
-          site.client_id === parseInt(values.client_id, 10)
+        (site) => site.ksec_id === parseInt(values.site_ksec_id, 10)
       );
 
-      let selectedFacility = null;
-      if (selectedSite) {
-        selectedFacility = facilities.find(
-          (facility) =>
-            facility.ksec_id === parseInt(values.facility_ksec_id, 10) &&
-            facility.site_id === selectedSite.id
+      if (!selectedSite) {
+        throw new Error(
+          'Selected site not found or does not belong to the selected client'
         );
       }
 
-      // Limpiar espacios en blanco con trim()
-      const cleanedValues = {
+      // Validar que el facility pertenece al sitio seleccionado (si se proporcionó)
+      let selectedFacility = null;
+      if (values.facility_ksec_id) {
+        selectedFacility = facilities.find(
+          (facility) =>
+            facility.ksec_id === parseInt(values.facility_ksec_id, 10)
+        );
+
+        if (!selectedFacility) {
+          throw new Error(
+            'Selected facility not found or does not belong to the selected site'
+          );
+        }
+      }
+
+      const deviceData = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
-        client_id: values.client_id.trim(),
+        client_id: values.client_id,
         site_id: selectedSite.id,
-        site_ksec_id: values.site_ksec_id.trim(),
-        facility_id: selectedFacility ? selectedFacility.id : null,
-        facility_ksec_id: values.facility_ksec_id.trim() || null,
+        site_ksec_id: values.site_ksec_id,
+        facility_id: selectedFacility?.id || null,
+        facility_ksec_id: selectedFacility?.ksec_id || null,
         location: values.location.trim(),
-        mode: values.mode.trim(),
+        mode: values.mode,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
-      console.log(cleanedValues);
-
-      const { data, error } = await supabase
-        .from('devices')
-        .insert([cleanedValues]);
+      const { error } = await supabase.from('devices').insert([deviceData]);
 
       if (error) {
         throw error;
       }
 
-      // Mostrar mensaje de éxito con react-toastify
       toast.success('Device created successfully!');
-      resetForm(); // Limpiar el formulario después de guardar
+      resetForm();
+      navigate('/devices'); // Redirigir después de crear
     } catch (error) {
-      // Mostrar mensaje de error con react-toastify
-      console.error(error);
-      toast.error(`Error creating device: ${error.message}`);
+      console.error('Error creating device:', error);
+      toast.error(error.message || 'Error creating device');
     } finally {
       setSubmitting(false);
     }
