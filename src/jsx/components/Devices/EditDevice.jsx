@@ -6,7 +6,6 @@ import { supabase } from '../../supabase/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Esquema de validación con Yup para dispositivos
 const deviceSchema = Yup.object().shape({
   unique_id: Yup.string()
     .min(3, 'Unique ID must be at least 3 characters')
@@ -34,6 +33,7 @@ const EditDevice = () => {
   const [clients, setClients] = useState([]);
   const [sites, setSites] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [initialValues, setInitialValues] = useState(null);
 
   useEffect(() => {
     const fetchDevice = async () => {
@@ -47,13 +47,26 @@ const EditDevice = () => {
         toast.error(`Error fetching device: ${error.message}`);
       } else {
         setDevice(data);
+        // Cargar sitios y facilities correspondientes al dispositivo
+        if (data.client_id) {
+          await fetchSites(data.client_id);
+          if (data.site_ksec_id) {
+            const site = await supabase
+              .from('sites')
+              .select('id')
+              .eq('ksec_id', data.site_ksec_id)
+              .single();
+            if (site.data) {
+              await fetchFacilities(site.data.id);
+            }
+          }
+        }
       }
     };
 
     fetchDevice();
   }, [id]);
 
-  // Obtener la lista de clientes
   useEffect(() => {
     const fetchClients = async () => {
       const { data, error } = await supabase
@@ -70,11 +83,10 @@ const EditDevice = () => {
     fetchClients();
   }, []);
 
-  // Función para obtener los sites filtrados por client_id
   const fetchSites = async (clientId) => {
     const { data, error } = await supabase
       .from('sites')
-      .select('id, name, ksec_id')
+      .select('id, name, ksec_id, client_id')
       .eq('client_id', clientId);
 
     if (error) {
@@ -84,11 +96,10 @@ const EditDevice = () => {
     }
   };
 
-  // Función para obtener los facilities filtrados por site_ksec_id
   const fetchFacilities = async (siteId) => {
     const { data, error } = await supabase
       .from('facilities')
-      .select('id, name, ksec_id')
+      .select('id, name, ksec_id, site_id')
       .eq('site_id', siteId);
 
     if (error) {
@@ -98,40 +109,39 @@ const EditDevice = () => {
     }
   };
 
-  // Función para actualizar el dispositivo
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
+      // Encontrar el sitio seleccionado
       const selectedSite = sites.find(
-        (site) =>
-          site.ksec_id === parseInt(values.site_ksec_id, 10) &&
-          site.client_id === parseInt(values.client_id, 10)
+        (site) => site.ksec_id === parseInt(values.site_ksec_id, 10)
       );
 
+      if (!selectedSite) {
+        throw new Error('Selected site not found');
+      }
+
+      // Encontrar el facility seleccionado (si existe)
       let selectedFacility = null;
-      if (selectedSite) {
+      if (values.facility_ksec_id) {
         selectedFacility = facilities.find(
           (facility) =>
-            facility.ksec_id === parseInt(values.facility_ksec_id, 10) &&
-            facility.site_id === selectedSite.id
+            facility.ksec_id === parseInt(values.facility_ksec_id, 10)
         );
       }
 
       const cleanedValues = {
         unique_id: values.unique_id.trim(),
         model: values.model.trim(),
-        client_id: values.client_id.trim(),
+        client_id: values.client_id,
         site_id: selectedSite.id,
-        site_ksec_id: values.site_ksec_id.trim(),
-        facility_id: selectedFacility ? selectedFacility.id : null,
-        facility_ksec_id: values.facility_ksec_id.trim() || null,
+        site_ksec_id: values.site_ksec_id,
+        facility_id: selectedFacility?.id || null,
+        facility_ksec_id: selectedFacility?.ksec_id || null,
         location: values.location.trim(),
-        mode: values.mode.trim(),
+        mode: values.mode,
       };
 
-      console.log('Valores enviados:', cleanedValues); // Depuración
-      console.log('Valor de mode:', JSON.stringify(cleanedValues.mode)); // Depuración
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('devices')
         .update(cleanedValues)
         .eq('id', id);
@@ -141,8 +151,9 @@ const EditDevice = () => {
       }
 
       toast.success('Device updated successfully!');
+      navigate('/devices'); // Redirigir después de actualizar
     } catch (error) {
-      console.error('Error de Supabase:', error); // Depuración
+      console.error('Supabase Error:', error);
       toast.error(`Error updating device: ${error.message}`);
     } finally {
       setSubmitting(false);
@@ -175,6 +186,7 @@ const EditDevice = () => {
                   }}
                   validationSchema={deviceSchema}
                   onSubmit={handleSubmit}
+                  enableReinitialize
                 >
                   {({ isSubmitting, values, setFieldValue }) => (
                     <Form>
