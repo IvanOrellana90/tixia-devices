@@ -34,6 +34,8 @@ import FacilityList from './components/Facilities/FacilityList';
 // Device
 import AddDevice from './components/Devices/AddDevice';
 import DeviceList from './components/Devices/DeviceList';
+import ActiveDevices from './components/Devices/FilterDevices/ActiveDevices';
+import InactiveDevices from './components/Devices/FilterDevices/InactiveDevices';
 import EditDevice from './components/Devices/EditDevice';
 import DeviceDetail from './components/Devices/DeviceDetail';
 
@@ -69,6 +71,8 @@ const Markup = () => {
     { url: 'devices', component: <DeviceList /> },
     { url: 'edit-device/:id', component: <EditDevice /> },
     { url: 'device/:id', component: <DeviceDetail /> },
+    { url: 'active-devices', component: <ActiveDevices /> },
+    { url: 'inactive-devices', component: <InactiveDevices /> },
   ];
 
   return (

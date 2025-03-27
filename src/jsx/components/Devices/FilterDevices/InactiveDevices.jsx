@@ -6,8 +6,8 @@ import {
   useFilters,
   usePagination,
 } from 'react-table';
-import { supabase } from '../../supabase/client';
-import PageTitle from '../../layouts/PageTitle';
+import { supabase } from '../../../supabase/client';
+import PageTitle from '../../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -26,7 +26,7 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
-const DeviceList = () => {
+const InactiveDevices = () => {
   const [devices, setDevices] = useState([]);
   const [showAlert, setShowAlert] = useState(false); // Controla la visibilidad de la alerta
   const [locationInput, setLocationInput] = useState(''); // Almacena el location ingresado
@@ -45,7 +45,7 @@ const DeviceList = () => {
         site:site_id (name)
       `
         )
-        .order('active')
+        .eq('active', false)
         .order('activated_at', { ascending: false });
 
       if (error) {
@@ -256,7 +256,7 @@ const DeviceList = () => {
       <PageTitle activeMenu="Devices" motherMenu="Table" />
       <div className="card">
         <div className="card-header">
-          <h4 className="card-title">Device List</h4>
+          <h4 className="card-title">Inactive Devices</h4>
         </div>
         <div className="card-body">
           {/* Alerta de confirmación */}
@@ -421,4 +421,4 @@ const DeviceList = () => {
   );
 };
 
-export default DeviceList;
+export default InactiveDevices;
