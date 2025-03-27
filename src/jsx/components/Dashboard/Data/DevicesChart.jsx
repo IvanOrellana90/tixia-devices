@@ -28,7 +28,7 @@ const getDeviceName = (dataKey) => {
 
 const DevicesChart = () => {
   const [data, setData] = useState([]);
-  const [timeRange, setTimeRange] = useState('12months'); // '12months', '30days', '7days'
+  const [timeRange, setTimeRange] = useState('30days'); // '12months', '30days', '7days'
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
