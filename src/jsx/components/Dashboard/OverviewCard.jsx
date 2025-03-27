@@ -155,33 +155,32 @@ function DashboardOverviewCard() {
           </div>
         </div>
         <div className="row">
-          <div className="col-xl-8 col-xxl-8 col-md-12">
-            <div className="card">
-              <div className="card-body d-flex flex-column">
-                <div className="row">
-                  <div className="clearfix d-xl-flex flex-grow-1">
-                    <div className="clearfix pe-md-5">
-                      <div className="d-flex flex-nowrap">
-                        {cardData.map((data, ind) => (
-                          <div
-                            className="border outline-dashed rounded p-2 d-flex align-items-center me-3 mt-3 flex-shrink-0"
-                            key={ind}
-                          >
-                            <div className="avatar avatar-md bg-primary-light text-primary rounded d-flex align-items-center justify-content-center">
-                              {data.icon}
-                            </div>
-                            <div className="clearfix ms-2">
-                              <h3 className="mb-0 fw-semibold lh-1">
-                                {data.number}
-                              </h3>
-                              <span className="fs-14">{data.title}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+          <div className="clearfix d-xl-flex flex-grow-1 mb-4">
+            <div className="clearfix pe-md-5">
+              <div className="d-flex flex-nowrap">
+                {cardData.map((data, ind) => (
+                  <div
+                    className="border outline-dashed rounded p-2 d-flex align-items-center me-3 mt-3 flex-shrink-0 bg-white"
+                    key={ind}
+                  >
+                    <div className="avatar avatar-md bg-primary-light text-primary rounded d-flex align-items-center justify-content-center">
+                      {data.icon}
+                    </div>
+                    <div className="clearfix ms-2">
+                      <h3 className="mb-0 fw-semibold lh-1">{data.number}</h3>
+                      <span className="fs-14">{data.title}</span>
                     </div>
                   </div>
-                </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="col-xl-8 col-xxl-8 col-md-12">
+            <div className="card">
+              <div className="card-header pb-2">
+                <h4 className="text-black">Entered Devices</h4>
+              </div>
+              <div className="card-body d-flex flex-column">
                 <div className="mt-4">
                   {' '}
                   <DevicesChart />
@@ -212,7 +211,7 @@ function DashboardOverviewCard() {
                 <h4 className="text-black">Latest Devices</h4>
               </div>
               <div className="card-body timeline pb-2">
-                {devices.slice(0, 5).map((device, index) => (
+                {devices.slice(0, 6).map((device, index) => (
                   <div className="timeline-panel align-items-end" key={index}>
                     <div className="media-body">
                       <h5 className="mb-1">
