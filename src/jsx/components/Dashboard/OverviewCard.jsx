@@ -45,7 +45,10 @@ function DashboardOverviewCard() {
     };
 
     const fetchDevices = async () => {
-      const { data, error } = await supabase.from('devices').select(`
+      const { data, error } = await supabase
+        .from('devices')
+        .select(
+          `
                     id,
                     location,
                     mode,
@@ -54,7 +57,9 @@ function DashboardOverviewCard() {
                     created_at,
                     active,
                     client:client_id (name)
-                `);
+                `
+        )
+        .order('created_at', { ascending: false });
       if (error) toast.error(`Error fetching devices: ${error.message}`);
       else setDevices(data);
     };
