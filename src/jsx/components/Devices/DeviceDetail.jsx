@@ -11,6 +11,7 @@ import {
   faClock,
 } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment/moment';
+import UpTimeChart from './UpTimeChart';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -136,7 +137,11 @@ const DeviceDetail = () => {
         </div>
       </div>
 
-      {/* Stats Card */}
+      <div className="row">
+        <div className="col-xl-8 col-xxl-8 col-sm-12">
+          <UpTimeChart deviceId={id} />
+        </div>
+      </div>
     </Fragment>
   );
 };
