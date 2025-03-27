@@ -134,7 +134,7 @@ const DeviceDetail = () => {
         <div className="col-xl-6 col-xxl-6 col-sm-12">
           <UpTimeChart deviceId={id} />
         </div>
-        <div className="col-md-12 col-xxl-6">
+        <div className="col-md-6 col-xxl-6 col-sm-12">
           <ActivityDetail deviceId={id} />
         </div>
       </div>
