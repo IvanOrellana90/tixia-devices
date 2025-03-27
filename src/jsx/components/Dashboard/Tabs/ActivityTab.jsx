@@ -190,27 +190,36 @@ const ActivityTab = () => {
   };
 
   return (
-    <div className="row">
-      <div className="col-md-12 col-xxl-6">
-        <div className="card">
-          <div className="card-header">
-            <h4 className="card-title mb-0">Last Activity</h4>
-            <button
-              onClick={exportToExcel}
-              className="me-1 btn btn-outline-success btn-rounded btn-sm"
-            >
-              Excel
-            </button>
-          </div>
-          <div className="card-body">
-            <div className="widget-timeline-status">
-              <ul className="timeline">
+    <div className="col-xl-6 col-xxxl-6 col-12">
+      <div className="card">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <h4 className="card-title mb-0">Last Activity</h4>
+          <button
+            onClick={exportToExcel}
+            className="btn btn-outline-success btn-sm"
+          >
+            <span className="d-none d-sm-inline">Excel</span>
+            <i className="fas fa-file-excel d-sm-none"></i>
+          </button>
+        </div>
+        <div className="card-body p-0">
+          <div className="widget-timeline-status">
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <ul className="timeline timeline-mobile px-3">
                 {logs.map((log) => (
-                  <li key={log.id} className="timeline-item">
-                    <span className="timeline-status">{log.date}</span>
-                    <div className={`timeline-badge ${log.badgeClass}`}></div>
-                    <div className="timeline-panel">
-                      <span className="fs-14">{log.message}</span>
+                  <li key={log.id} className="timeline-item mb-3">
+                    <div className="d-flex flex-column flex-sm-row">
+                      <div className="d-flex align-items-start mb-2 mb-sm-0">
+                        <div
+                          className={`timeline-badge ${log.badgeClass} me-2`}
+                        ></div>
+                        <span className="timeline-status text-muted small">
+                          {log.date}
+                        </span>
+                      </div>
+                      <div className="timeline-panel flex-grow-1">
+                        <span className="fs-14">{log.message}</span>
+                      </div>
                     </div>
                   </li>
                 ))}

@@ -18,7 +18,15 @@ const UpTimeChart = ({ deviceId }) => {
       const days = range === 'week' ? 7 : 30;
       const since = dayjs().subtract(days, 'day').startOf('day').toISOString();
 
-      const { data, error } = await supabase
+      // 1. Obtener el estado inicial del dispositivo
+      const { data: deviceData } = await supabase
+        .from('devices')
+        .select('created_at, active')
+        .eq('id', deviceId)
+        .single();
+
+      // 2. Obtener los logs de actualización
+      const { data: logs, error } = await supabase
         .from('logs')
         .select('created_at, new_data')
         .eq('table_name', 'devices')
@@ -32,46 +40,96 @@ const UpTimeChart = ({ deviceId }) => {
         return;
       }
 
+      // 3. Procesar los datos
+      const allStatusChanges = [
+        // Estado inicial
+        {
+          created_at: deviceData.created_at,
+          active: deviceData.active,
+          isInitial: true,
+        },
+        // Todos los cambios de estado
+        ...logs.map((log) => ({
+          created_at: log.created_at,
+          active: log.new_data.active,
+          isInitial: false,
+        })),
+      ].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+      const now = dayjs();
       const grouped = {};
 
-      data.forEach((log, i) => {
-        const date = dayjs(log.created_at).format('YYYY-MM-DD');
-        const current = log.new_data;
-        const prev = i > 0 ? data[i - 1].new_data : null;
+      // 4. Calcular el tiempo para cada período
+      for (let i = 0; i < allStatusChanges.length; i++) {
+        const current = allStatusChanges[i];
+        const next = allStatusChanges[i + 1] || {
+          created_at: now.toISOString(),
+        };
 
-        if (!grouped[date]) {
-          grouped[date] = { up: 0, down: 0 };
+        const start = dayjs(current.created_at);
+        const end = dayjs(next.created_at);
+        const duration = end.diff(start, 'minute');
+
+        // Agrupar por día
+        const startDate = start.format('YYYY-MM-DD');
+        const endDate = end.format('YYYY-MM-DD');
+
+        if (startDate === endDate) {
+          // Mismo día
+          if (!grouped[startDate]) {
+            grouped[startDate] = { up: 0, down: 0 };
+          }
+          if (current.active) {
+            grouped[startDate].up += duration;
+          } else {
+            grouped[startDate].down += duration;
+          }
+        } else {
+          // Período que cruza días
+          const daysBetween = end.diff(start, 'day');
+
+          for (let d = 0; d <= daysBetween; d++) {
+            const currentDate = start.add(d, 'day').format('YYYY-MM-DD');
+            if (!grouped[currentDate]) {
+              grouped[currentDate] = { up: 0, down: 0 };
+            }
+
+            const dayStart =
+              d === 0 ? start : dayjs(currentDate).startOf('day');
+            const dayEnd =
+              d === daysBetween ? end : dayjs(currentDate).endOf('day');
+
+            const dayDuration = dayEnd.diff(dayStart, 'minute');
+
+            if (current.active) {
+              grouped[currentDate].up += dayDuration;
+            } else {
+              grouped[currentDate].down += dayDuration;
+            }
+          }
         }
+      }
 
-        if (prev && prev.active !== current.active) {
-          const prevTime = dayjs(data[i - 1].created_at);
-          const currTime = dayjs(log.created_at);
-          const duration = currTime.diff(prevTime, 'minute');
-
-          const newUp = grouped[date].up + (prev.active ? duration : 0);
-          const newDown = grouped[date].down + (!prev.active ? duration : 0);
-
-          grouped[date].up = Math.min(newUp, 1440);
-          grouped[date].down = Math.min(newDown, 1440);
-        }
-      });
-
+      // 5. Preparar datos para el gráfico
       const daysRange = [...Array(days)]
         .map((_, i) => dayjs().subtract(i, 'day').format('YYYY-MM-DD'))
         .reverse();
 
-      const upSeries = daysRange.map((d, i) => {
-        const isToday = i === daysRange.length - 1;
+      const upSeries = daysRange.map((date) => {
+        const dayData = grouped[date] || { up: 0, down: 0 };
+        const isToday = date === dayjs().format('YYYY-MM-DD');
         const maxMinutes = isToday
-          ? dayjs().diff(dayjs().startOf('day'), 'minute')
+          ? dayjs().diff(dayjs(date).startOf('day'), 'minute')
           : 1440;
-        const upValue = grouped[d]?.up || 0;
-        return Math.min(upValue, maxMinutes);
+
+        // Asegurar que no exceda el máximo de minutos del día
+        return Math.min(dayData.up, maxMinutes);
       });
-      const downSeries = daysRange.map((d, i) => {
-        const isToday = i === daysRange.length - 1;
+
+      const downSeries = daysRange.map((date, i) => {
+        const isToday = date === dayjs().format('YYYY-MM-DD');
         const maxMinutes = isToday
-          ? dayjs().diff(dayjs().startOf('day'), 'minute')
+          ? dayjs().diff(dayjs(date).startOf('day'), 'minute')
           : 1440;
         return maxMinutes - upSeries[i];
       });

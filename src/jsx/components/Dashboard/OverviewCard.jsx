@@ -155,26 +155,30 @@ function DashboardOverviewCard() {
           </div>
         </div>
         <div className="row">
-          <div className="clearfix d-xl-flex flex-grow-1 mb-4">
-            <div className="clearfix pe-md-5">
-              <div className="d-flex flex-nowrap">
-                {cardData.map((data, ind) => (
-                  <div
-                    className="border outline-dashed rounded p-2 d-flex align-items-center me-3 mt-3 flex-shrink-0 bg-white"
-                    key={ind}
-                  >
+          <div className="col-xl-6 col-xxl-6 col-md-12">
+            <div className="row g-3 mb-3">
+              {' '}
+              {cardData.map((data, ind) => (
+                <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={ind}>
+                  {' '}
+                  {/* Ajusta columnas según necesidad */}
+                  <div className="border outline-dashed rounded p-2 d-flex align-items-center bg-white h-100">
                     <div className="avatar avatar-md bg-primary-light text-primary rounded d-flex align-items-center justify-content-center">
                       {data.icon}
                     </div>
-                    <div className="clearfix ms-2">
-                      <h3 className="mb-0 fw-semibold lh-1">{data.number}</h3>
-                      <span className="fs-14">{data.title}</span>
+                    <div className="ms-2">
+                      <h3 className="mb-0 fw-semibold lh-1 fs-5">
+                        {data.number}
+                      </h3>
+                      <span className="fs-14 text-muted">{data.title}</span>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+        <div className="row">
           <div className="col-xl-8 col-xxl-8 col-md-12">
             <div className="card">
               <div className="card-header pb-2">
@@ -240,7 +244,7 @@ function DashboardOverviewCard() {
               </div>
             </div>
           </div>
-          <div className="row mt-4">
+          <div className="mt-1">
             {activeTab === 'dashboard-overview' && <OverviewTab />}
             {activeTab === 'dashboard-activity' && <ActivityTab />}
           </div>
