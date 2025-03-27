@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import moment from 'moment/moment';
 import UpTimeChart from './UpTimeChart';
+import ActivityDetail from './ActivityDetail';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -34,19 +35,11 @@ const DeviceDetail = () => {
     fetchDevice();
   }, [id]);
 
-  // Función para determinar si el dispositivo está activo
-  const isDeviceActive = () => {
-    if (!device?.active_at) return false;
-    const lastActive = moment(device.active_at);
-    const now = moment();
-    return now.diff(lastActive, 'minutes') < 15; // Considerar activo si se conectó en los últimos 15 minutos
-  };
-
   // Función para renderizar el estado del dispositivo
   const renderDeviceStatus = () => {
     if (!device) return null;
 
-    if (isDeviceActive()) {
+    if (device.active) {
       return (
         <div
           role="alert"
@@ -138,8 +131,11 @@ const DeviceDetail = () => {
       </div>
 
       <div className="row">
-        <div className="col-xl-8 col-xxl-8 col-sm-12">
+        <div className="col-xl-6 col-xxl-6 col-sm-12">
           <UpTimeChart deviceId={id} />
+        </div>
+        <div className="col-md-12 col-xxl-6">
+          <ActivityDetail deviceId={id} />
         </div>
       </div>
     </Fragment>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import { supabase } from '../../supabase/client';
 import dayjs from 'dayjs';
+import { Dropdown } from 'react-bootstrap';
 
 const UpTimeChart = ({ deviceId }) => {
   const [chartData, setChartData] = useState({
@@ -59,10 +60,20 @@ const UpTimeChart = ({ deviceId }) => {
         .map((_, i) => dayjs().subtract(i, 'day').format('YYYY-MM-DD'))
         .reverse();
 
-      const upSeries = daysRange.map((d) => grouped[d]?.up || 0);
+      const upSeries = daysRange.map((d, i) => {
+        const isToday = i === daysRange.length - 1;
+        const maxMinutes = isToday
+          ? dayjs().diff(dayjs().startOf('day'), 'minute')
+          : 1440;
+        const upValue = grouped[d]?.up || 0;
+        return Math.min(upValue, maxMinutes);
+      });
       const downSeries = daysRange.map((d, i) => {
-        const calculatedDown = 1440 - upSeries[i];
-        return Math.min(calculatedDown, 1440);
+        const isToday = i === daysRange.length - 1;
+        const maxMinutes = isToday
+          ? dayjs().diff(dayjs().startOf('day'), 'minute')
+          : 1440;
+        return maxMinutes - upSeries[i];
       });
 
       setChartData({
@@ -129,34 +140,24 @@ const UpTimeChart = ({ deviceId }) => {
       <div className="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
         <h4 className="card-title">Device Status</h4>
 
-        <div className="dropdown">
-          <button
-            type="button"
-            className="btn btn-outline-light btn-rounded btn-sm dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
+        <Dropdown>
+          <Dropdown.Toggle
+            variant="outline-light"
+            size="sm"
+            className="btn-rounded"
           >
             {range === 'week' ? 'This Week' : 'This Month'}
-          </button>
-          <ul className="dropdown-menu">
-            <li>
-              <button
-                className="dropdown-item"
-                onClick={() => setRange('week')}
-              >
-                This Week
-              </button>
-            </li>
-            <li>
-              <button
-                className="dropdown-item"
-                onClick={() => setRange('month')}
-              >
-                This Month
-              </button>
-            </li>
-          </ul>
-        </div>
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
+            <Dropdown.Item onClick={() => setRange('week')}>
+              This Week
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => setRange('month')}>
+              This Month
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
 
       <div className="card-body">

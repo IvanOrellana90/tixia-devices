@@ -94,55 +94,59 @@ function DashboardOverviewCard() {
         <div className="row">
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos activos */}
-            <div
-              role="alert"
-              className="fade left-icon-big alert alert-success show"
-            >
-              <div className="media">
-                <div className="alert-left-icon-big">
-                  <span className="me-3">
-                    <FontAwesomeIcon
-                      icon={faPhoneFlip}
-                      className="mdi mdi-check-circle-outline"
-                      size="2x" // Agrandar el icono
-                    />
-                  </span>
-                </div>
-                <div className="media-body flex-1">
-                  <h4 className="alert-heading">Active Devices</h4>
-                  <p className="mb-0">
-                    Actual number of active devices:{' '}
-                    <strong>{activeDevices}</strong>
-                  </p>
+            <a href="/active-devices" style={{ textDecoration: 'none' }}>
+              <div
+                role="alert"
+                className="fade left-icon-big alert alert-success show"
+              >
+                <div className="media">
+                  <div className="alert-left-icon-big">
+                    <span className="me-3">
+                      <FontAwesomeIcon
+                        icon={faPhoneFlip}
+                        className="mdi mdi-check-circle-outline"
+                        size="2x" // Agrandar el icono
+                      />
+                    </span>
+                  </div>
+                  <div className="media-body flex-1">
+                    <h4 className="alert-heading">Active Devices</h4>
+                    <p className="mb-0">
+                      Actual number of active devices:{' '}
+                      <strong>{activeDevices}</strong>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos inactivos */}
-            <div
-              role="alert"
-              className="fade left-icon-big alert alert-danger show"
-            >
-              <div className="media">
-                <div className="alert-left-icon-big">
-                  <span className="me-3">
-                    <FontAwesomeIcon
-                      icon={faPhoneSlash}
-                      className="mdi mdi-check-circle-outline"
-                      size="2x" // Agrandar el icono
-                    />
-                  </span>
-                </div>
-                <div className="media-body flex-1">
-                  <h4 className="alert-heading">Inactive Devices</h4>
-                  <p className="mb-0">
-                    Actual number of inactive devices:{' '}
-                    <strong>{inactiveDevices}</strong>
-                  </p>
+            <a href="/inactive-devices" style={{ textDecoration: 'none' }}>
+              <div
+                role="alert"
+                className="fade left-icon-big alert alert-danger show"
+              >
+                <div className="media">
+                  <div className="alert-left-icon-big">
+                    <span className="me-3">
+                      <FontAwesomeIcon
+                        icon={faPhoneSlash}
+                        className="mdi mdi-check-circle-outline"
+                        size="2x" // Agrandar el icono
+                      />
+                    </span>
+                  </div>
+                  <div className="media-body flex-1">
+                    <h4 className="alert-heading">Inactive Devices</h4>
+                    <p className="mb-0">
+                      Actual number of inactive devices:{' '}
+                      <strong>{inactiveDevices}</strong>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
         </div>
         <div className="row">
