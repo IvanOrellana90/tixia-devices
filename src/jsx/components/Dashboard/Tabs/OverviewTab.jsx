@@ -85,7 +85,7 @@ const OverviewTab = () => {
 
   return (
     <div className="row">
-      <div className="col-md-4">
+      <div className="col-md-12 col-xl-4">
         <DevicesByModeChart
           data={stats}
           title="Devices by Mode"
