@@ -165,6 +165,7 @@ const DeviceList = () => {
     {
       Header: 'Actions',
       accessor: 'actions',
+      disableGlobalFilter: true,
       Cell: ({ row }) => (
         <div className="d-flex">
           {/* Botón de editar */}
@@ -219,6 +220,15 @@ const DeviceList = () => {
       columns,
       data,
       initialState: { pageIndex: 0, pageSize: 10 },
+      globalFilter: (rows, _, globalFilter) => {
+        const searchValue = globalFilter.toLowerCase();
+        return rows.filter((row) => {
+          return Object.values(row.original).some((value) => {
+            if (value === null || value === undefined) return false;
+            return String(value).toLowerCase().includes(searchValue);
+          });
+        });
+      },
     },
     useFilters,
     useGlobalFilter,
