@@ -47,7 +47,7 @@ const DevicesByModeChart = ({
       </div>
 
       <div className="card-body pt-2">
-        <div className="border p-3 d-flex justify-content-between fs-14 rounded-lg mb-1">
+        <div className="border p-3 d-flex justify-content-between fs-14 rounded-lg mb-2">
           <span className="text-black">
             Total {showActiveDevices ? 'active' : 'inactive'} devices
           </span>
@@ -62,7 +62,7 @@ const DevicesByModeChart = ({
           style={{
             cursor: 'pointer',
           }}
-          className="mb-4 status-devices"
+          className="mb-4 status-devices ms-2"
         />
 
         <div className="text-center">
