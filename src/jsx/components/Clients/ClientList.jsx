@@ -34,11 +34,16 @@ const COLUMNS = [
     Header: 'URL',
     accessor: 'url', // Accede a la propiedad "url" de cada cliente
     Filter: ColumnFilter, // Filtro por columna
-  },
-  {
-    Header: 'API Key',
-    accessor: 'api_key', // Accede a la propiedad "api_key" de cada cliente
-    Filter: ColumnFilter, // Filtro por columna
+    Cell: ({ value }) => (
+      <a
+        href={value}
+        target="_blank"
+        className="text-primary"
+        rel="noopener noreferrer"
+      >
+        {value}
+      </a>
+    ),
   },
 ];
 
@@ -48,7 +53,9 @@ const ClientList = () => {
   // Obtener la lista de clientes desde Supabase
   useEffect(() => {
     const fetchClients = async () => {
-      const { data, error } = await supabase.from('clients').select('*'); // Seleccionar todas las columnas de la tabla "clients"
+      const { data, error } = await supabase
+        .from('clients')
+        .select('name, url'); // Seleccionar todas las columnas de la tabla "clients"
 
       if (error) {
         console.error('Error fetching clients:', error.message);

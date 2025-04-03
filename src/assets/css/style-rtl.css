@@ -2764,14 +2764,6 @@ textarea.form-control-lg {
   opacity: 0.5;
 }
 
-.status-devices input#active-switch {
-  border-color: #CC444A;
-}
-
-.status-devices input#active-switch:checked {
-  background-color: #0D4B14;
-  border-color: #D2F0D5;
-}
 .form-switch {
   padding-left: 2.5em;
 }
