@@ -5,6 +5,23 @@ export const MenuList = [
     iconStyle: <i className="flaticon-381-home" />,
   },
 
+  // Mobiles
+  {
+    title: 'Mobiles',
+    classsChange: 'mm-collapse',
+    iconStyle: <i className="flaticon-381-smartphone" />,
+    content: [
+      {
+        title: 'Add Mobile',
+        to: 'add-mobile',
+      },
+      {
+        title: 'Mobile List',
+        to: 'mobile-list',
+      },
+    ],
+  },
+
   // Devices
   {
     title: 'Devices',
