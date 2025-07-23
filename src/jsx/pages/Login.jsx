@@ -42,8 +42,7 @@ const Login = () => {
       try {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: 'https://ksec-devices.netlify.app/' },
-          // options: { emailRedirectTo: 'http://localhost:5173/' },
+          options: { emailRedirectTo: import.meta.env.VITE_LOGIN_REDIRECT_URL },
         });
 
         if (error) throw error;
