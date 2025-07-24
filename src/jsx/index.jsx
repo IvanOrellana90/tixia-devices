@@ -46,6 +46,7 @@ import DeviceDetail from './components/Devices/DeviceDetail';
 // Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
+import EditMobile from './components/Mobiles/EditMobile';
 
 const Markup = () => {
   const allroutes = [
@@ -72,6 +73,8 @@ const Markup = () => {
     //Mobile
     { url: 'add-mobile', component: <AddMobile /> },
     { url: 'mobile-list', component: <MobileList /> },
+    { url: 'mobiles', component: <MobileList /> },
+    { url: 'edit-mobile/:id', component: <EditMobile /> },
 
     //Device
     { url: 'add-device', component: <AddDevice /> },

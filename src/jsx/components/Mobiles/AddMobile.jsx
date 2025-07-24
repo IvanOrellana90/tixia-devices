@@ -5,8 +5,11 @@ import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 
-// Esquema de validación con Yup
 const mobileSchema = Yup.object().shape({
+  unique_id: Yup.string()
+    .min(3, 'Unique ID must be at least 3 characters')
+    .max(50, 'Unique ID cannot exceed 50 characters')
+    .required('Unique ID is required'),
   imei: Yup.string()
     .min(5, 'IMEI must be at least 5 characters')
     .max(50, 'IMEI cannot exceed 50 characters')
@@ -17,6 +20,7 @@ const mobileSchema = Yup.object().shape({
     .required('Model is required'),
   has_sim_card: Yup.boolean(),
   is_rented: Yup.boolean(),
+  active: Yup.boolean(),
 });
 
 const AddMobile = () => {
@@ -24,15 +28,15 @@ const AddMobile = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const cleanedValues = {
+        unique_id: values.unique_id.trim(),
         imei: values.imei.trim(),
         model: values.model.trim(),
         has_sim_card: values.has_sim_card,
         is_rented: values.is_rented,
+        active: values.active,
       };
 
-      const { data, error } = await supabase
-        .from('mobiles')
-        .insert([cleanedValues]);
+      const { error } = await supabase.from('mobiles').insert([cleanedValues]);
 
       if (error) throw error;
 
@@ -52,22 +56,42 @@ const AddMobile = () => {
         <div className="col-lg-12">
           <div className="card">
             <div className="card-header">
-              <h4 className="card-title">New Mobile Device</h4>
+              <h4 className="card-title">New Mobile</h4>
             </div>
             <div className="card-body">
               <Formik
                 initialValues={{
+                  unique_id: '',
                   imei: '',
                   model: '',
                   has_sim_card: false,
                   is_rented: false,
+                  active: true,
                 }}
                 validationSchema={mobileSchema}
                 onSubmit={handleSubmit}
               >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, values, setFieldValue }) => (
                   <Form>
                     <div className="row">
+                      <div className="col-lg-6 mb-2">
+                        <div className="form-group mb-3">
+                          <label className="text-label">
+                            Unique ID <span className="required">*</span>
+                          </label>
+                          <Field
+                            type="text"
+                            name="unique_id"
+                            className="form-control"
+                            placeholder="Enter Unique ID"
+                          />
+                          <ErrorMessage
+                            name="unique_id"
+                            component="div"
+                            className="text-danger"
+                          />
+                        </div>
+                      </div>
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">
@@ -86,7 +110,6 @@ const AddMobile = () => {
                           />
                         </div>
                       </div>
-
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">
@@ -105,41 +128,66 @@ const AddMobile = () => {
                           />
                         </div>
                       </div>
-
+                      {/* Active */}
                       <div className="col-lg-6 mb-2">
-                        <div className="form-check mb-3">
+                        <div className="form-group mb-3">
+                          <label className="text-label">State</label>
                           <Field
-                            type="checkbox"
+                            as="select"
+                            name="active"
+                            className="form-control"
+                            value={values.active ? 'true' : 'false'}
+                            onChange={(e) =>
+                              setFieldValue('active', e.target.value === 'true')
+                            }
+                          >
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                          </Field>
+                        </div>
+                      </div>
+                      {/* has_sim_card */}
+                      <div className="col-lg-6 mb-2">
+                        <div className="form-group mb-3">
+                          <label className="text-label">SIM Card</label>
+                          <Field
+                            as="select"
                             name="has_sim_card"
-                            className="form-check-input"
-                            id="has_sim_card"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="has_sim_card"
+                            className="form-control"
+                            value={values.has_sim_card ? 'true' : 'false'}
+                            onChange={(e) =>
+                              setFieldValue(
+                                'has_sim_card',
+                                e.target.value === 'true'
+                              )
+                            }
                           >
-                            Has SIM Card
-                          </label>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                          </Field>
                         </div>
                       </div>
-
+                      {/* is_rented */}
                       <div className="col-lg-6 mb-2">
-                        <div className="form-check mb-3">
+                        <div className="form-group mb-3">
+                          <label className="text-label">Rented</label>
                           <Field
-                            type="checkbox"
+                            as="select"
                             name="is_rented"
-                            className="form-check-input"
-                            id="is_rented"
-                          />
-                          <label
-                            className="form-check-label"
-                            htmlFor="is_rented"
+                            className="form-control"
+                            value={values.is_rented ? 'true' : 'false'}
+                            onChange={(e) =>
+                              setFieldValue(
+                                'is_rented',
+                                e.target.value === 'true'
+                              )
+                            }
                           >
-                            Is Rented
-                          </label>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                          </Field>
                         </div>
                       </div>
-
                       <div className="col-lg-12">
                         <button
                           type="submit"

@@ -2,31 +2,14 @@ export const MenuList = [
   {
     title: 'Home',
     to: '/',
-    iconStyle: <i className="flaticon-381-home" />,
-  },
-
-  // Mobiles
-  {
-    title: 'Mobiles',
-    classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-smartphone" />,
-    content: [
-      {
-        title: 'Add Mobile',
-        to: 'add-mobile',
-      },
-      {
-        title: 'Mobile List',
-        to: 'mobile-list',
-      },
-    ],
+    iconStyle: <i className="flaticon-381-home-2" />,
   },
 
   // Devices
   {
     title: 'Devices',
     classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-binoculars" />,
+    iconStyle: <i className="flaticon-381-search" />,
     content: [
       {
         title: 'Add Device',
@@ -35,6 +18,23 @@ export const MenuList = [
       {
         title: 'Device List',
         to: 'device-list',
+      },
+    ],
+  },
+
+  // Mobiles
+  {
+    title: 'Mobiles',
+    classsChange: 'mm-collapse',
+    iconStyle: <i className="flaticon-381-smartphone-5" />,
+    content: [
+      {
+        title: 'Add Mobile',
+        to: 'add-mobile',
+      },
+      {
+        title: 'Mobile List',
+        to: 'mobile-list',
       },
     ],
   },
@@ -60,7 +60,7 @@ export const MenuList = [
   {
     title: 'Sites',
     classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-layer-1" />,
+    iconStyle: <i className="flaticon-381-location-4" />,
     content: [
       {
         title: 'Add Site',
@@ -77,7 +77,7 @@ export const MenuList = [
   {
     title: 'Facility',
     classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-notepad" />,
+    iconStyle: <i className="flaticon-381-notification" />,
     content: [
       {
         title: 'Add Facility',

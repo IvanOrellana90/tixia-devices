@@ -8,14 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import PageTitle from '../../layouts/PageTitle';
 
 const deviceSchema = Yup.object().shape({
-  unique_id: Yup.string()
-    .min(3, 'Unique ID must be at least 3 characters')
-    .max(50, 'Unique ID cannot exceed 50 characters')
-    .required('Unique ID is required'),
-  model: Yup.string()
-    .min(3, 'Model must be at least 3 characters')
-    .max(50, 'Model cannot exceed 50 characters')
-    .required('Model is required'),
+  mobile_id: Yup.string().required('Unique ID is required'),
   client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string()
@@ -32,6 +25,7 @@ const AddDevice = () => {
   const [clients, setClients] = useState([]);
   const [sites, setSites] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [mobiles, setMobiles] = useState([]);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -46,7 +40,16 @@ const AddDevice = () => {
       }
     };
 
+    const fetchMobiles = async () => {
+      const { data, error } = await supabase
+        .from('mobiles')
+        .select('id, unique_id')
+        .order('unique_id', { ascending: true });
+      if (!error) setMobiles(data);
+    };
+
     fetchClients();
+    fetchMobiles();
   }, []);
 
   const fetchSites = async (clientId) => {
@@ -100,14 +103,12 @@ const AddDevice = () => {
         );
       }
 
-      // Validar que el facility pertenece al sitio seleccionado (si se proporcionó)
       let selectedFacility = null;
       if (values.facility_ksec_id) {
         selectedFacility = facilities.find(
           (facility) =>
             facility.ksec_id === parseInt(values.facility_ksec_id, 10)
         );
-
         if (!selectedFacility) {
           throw new Error(
             'Selected facility not found or does not belong to the selected site'
@@ -116,8 +117,7 @@ const AddDevice = () => {
       }
 
       const deviceData = {
-        unique_id: values.unique_id.trim(),
-        model: values.model.trim(),
+        mobile_id: values.mobile_id, // Ahora es el id del mobile seleccionado
         client_id: values.client_id,
         site_id: selectedSite.id,
         site_ksec_id: values.site_ksec_id,
@@ -131,15 +131,12 @@ const AddDevice = () => {
 
       const { error } = await supabase.from('devices').insert([deviceData]);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success('Device created successfully!');
       resetForm();
-      navigate('/devices'); // Redirigir después de crear
+      navigate('/devices');
     } catch (error) {
-      console.error('Error creating device:', error);
       toast.error(error.message || 'Error creating device');
     } finally {
       setSubmitting(false);
@@ -159,8 +156,7 @@ const AddDevice = () => {
               <div className="form-validation">
                 <Formik
                   initialValues={{
-                    unique_id: '',
-                    model: '',
+                    mobile_id: '',
                     client_id: '',
                     site_ksec_id: '',
                     facility_ksec_id: '',
@@ -179,32 +175,19 @@ const AddDevice = () => {
                               Unique ID <span className="required">*</span>
                             </label>
                             <Field
-                              type="text"
-                              name="unique_id"
+                              as="select"
+                              name="mobile_id"
                               className="form-control"
-                              placeholder="Device Unique ID"
-                            />
+                            >
+                              <option value="">Select Unique ID</option>
+                              {mobiles.map((mobile) => (
+                                <option key={mobile.id} value={mobile.id}>
+                                  {mobile.unique_id}
+                                </option>
+                              ))}
+                            </Field>
                             <ErrorMessage
-                              name="unique_id"
-                              component="div"
-                              className="text-danger"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="col-lg-6 mb-2">
-                          <div className="form-group mb-3">
-                            <label className="text-label">
-                              Model <span className="required">*</span>
-                            </label>
-                            <Field
-                              type="text"
-                              name="model"
-                              className="form-control"
-                              placeholder="Device Model"
-                            />
-                            <ErrorMessage
-                              name="model"
+                              name="mobile_id"
                               component="div"
                               className="text-danger"
                             />

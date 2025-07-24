@@ -39,11 +39,15 @@ const DeviceList = () => {
         .from('devices')
         .select(
           `
-        *,
-        clients:client_id (name),
-        facility:facility_id (name),
-        site:site_id (name)
-      `
+      *,
+      clients:client_id (name),
+      facility:facility_id (name),
+      site:site_id (name),
+      mobile:mobile_id (
+        unique_id,
+        model
+      )
+    `
         )
         .order('active')
         .order('activated_at', { ascending: false });
@@ -53,9 +57,11 @@ const DeviceList = () => {
       } else {
         const devicesWithNames = data.map((device) => ({
           ...device,
-          client_name: device.clients.name,
+          client_name: device.clients?.name || '',
           facility_name: device.facility?.name || '',
           site_name: device.site?.name || '',
+          unique_id: device.mobile?.unique_id || '',
+          model: device.mobile?.model || '',
         }));
         setDevices(devicesWithNames);
       }
@@ -113,11 +119,6 @@ const DeviceList = () => {
           {row.original.unique_id}
         </a>
       ),
-    },
-    {
-      Header: 'Model',
-      accessor: 'model',
-      Filter: ColumnFilter,
     },
     {
       Header: 'Client',

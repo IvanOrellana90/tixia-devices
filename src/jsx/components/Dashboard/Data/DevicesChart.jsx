@@ -28,7 +28,7 @@ const getDeviceName = (dataKey) => {
 
 const DevicesChart = () => {
   const [data, setData] = useState([]);
-  const [timeRange, setTimeRange] = useState('30days'); // '12months', '30days', '7days'
+  const [timeRange, setTimeRange] = useState('12months');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -130,7 +130,7 @@ const DevicesChart = () => {
       });
     } else {
       // Display as "MM/DD" (e.g., "01/15")
-      const [year, month, day] = dateString.split('-');
+      const [month, day] = dateString.split('-');
       return `${month}/${day}`;
     }
   };

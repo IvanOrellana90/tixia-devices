@@ -6,6 +6,7 @@ import {
   useFilters,
   usePagination,
 } from 'react-table';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 
@@ -24,6 +25,7 @@ const ColumnFilter = ({ column }) => {
 
 const MobileList = () => {
   const [mobiles, setMobiles] = useState([]);
+  const nav = useNavigate();
 
   useEffect(() => {
     const fetchMobiles = async () => {
@@ -38,41 +40,92 @@ const MobileList = () => {
     fetchMobiles();
   }, []);
 
-  const data = useMemo(() => mobiles, [mobiles]);
+  const COLUMNS = [
+    {
+      Header: 'Unique ID',
+      accessor: 'unique_id',
+      Filter: ColumnFilter,
+      Cell: ({ row }) => (
+        <a href={`/mobile/${row.original.id}`} className="text-primary">
+          {row.original.unique_id}
+        </a>
+      ),
+    },
+    {
+      Header: 'IMEI',
+      accessor: 'imei',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'Model',
+      accessor: 'model',
+      Filter: ColumnFilter,
+    },
+    {
+      Header: 'SIM Card',
+      accessor: 'has_sim_card',
+      Filter: ColumnFilter,
+      Cell: ({ value }) =>
+        value ? (
+          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-success bg-success-light dark:bg-[#21b7311a]">
+            Yes
+          </span>
+        ) : (
+          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-danger bg-danger-light dark:bg-[#ed34431a]">
+            No
+          </span>
+        ),
+    },
+    {
+      Header: 'Rented',
+      accessor: 'is_rented',
+      Filter: ColumnFilter,
+      Cell: ({ value }) =>
+        value ? (
+          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-success bg-success-light dark:bg-[#21b7311a]">
+            Yes
+          </span>
+        ) : (
+          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-danger bg-danger-light dark:bg-[#ed34431a]">
+            No
+          </span>
+        ),
+    },
+    {
+      Header: 'State',
+      accessor: 'active',
+      Filter: ColumnFilter,
+      Cell: ({ value }) => (
+        <div className="d-flex align-items-center">
+          <i
+            className={`fa fa-circle me-2 ${value ? 'text-success' : 'text-danger'}`}
+          ></i>
+          {value ? 'Active' : 'Inactive'}
+        </div>
+      ),
+    },
+    {
+      Header: 'Actions',
+      accessor: 'actions',
+      disableGlobalFilter: true,
+      Cell: ({ row }) => (
+        <div className="d-flex">
+          <button
+            onClick={() => {
+              nav(`/edit-mobile/${row.original.id}`);
+            }}
+            className="btn btn-primary shadow btn-xs me-1"
+          >
+            <i className="fa fa-edit" />
+          </button>
+        </div>
+      ),
+      disableFilters: true,
+    },
+  ];
 
-  const columns = useMemo(
-    () => [
-      {
-        Header: 'IMEI',
-        accessor: 'imei',
-        Filter: ColumnFilter,
-      },
-      {
-        Header: 'Model',
-        accessor: 'model',
-        Filter: ColumnFilter,
-      },
-      {
-        Header: 'SIM Card',
-        accessor: 'has_sim_card',
-        Cell: ({ value }) => (value ? 'Yes' : 'No'),
-        Filter: ColumnFilter,
-      },
-      {
-        Header: 'Rented',
-        accessor: 'is_rented',
-        Cell: ({ value }) => (value ? 'Yes' : 'No'),
-        Filter: ColumnFilter,
-      },
-      {
-        Header: 'Created At',
-        accessor: 'created_at',
-        Filter: ColumnFilter,
-        Cell: ({ value }) => new Date(value).toLocaleString(),
-      },
-    ],
-    []
-  );
+  const columns = useMemo(() => COLUMNS, []);
+  const data = useMemo(() => mobiles, [mobiles]);
 
   const {
     getTableProps,
