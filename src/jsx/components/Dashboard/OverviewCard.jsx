@@ -25,6 +25,7 @@ function DashboardOverviewCard() {
   const [sites, setSites] = useState([]);
   const [devices, setDevices] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [mobiles, setMobiles] = useState([]);
 
   const [activeTab, setActiveTab] = useState('dashboard-overview');
 
@@ -49,19 +50,30 @@ function DashboardOverviewCard() {
         .from('devices')
         .select(
           `
-                    id,
-                    location,
-                    mode,
-                    model,
-                    updated_at,
-                    created_at,
-                    active,
-                    client:client_id (name)
-                `
+            id,
+            location,
+            mode,
+            active,
+            updated_at,
+            created_at,
+            client:client_id (name),
+            mobile:mobile_id (
+              id,
+              unique_id,
+              imei,
+              model
+            )
+          `
         )
         .order('created_at', { ascending: false });
       if (error) toast.error(`Error fetching devices: ${error.message}`);
       else setDevices(data);
+    };
+
+    const fetchMobiles = async () => {
+      const { data, error } = await supabase.from('mobiles').select('*');
+      if (error) toast.error(`Error fetching mobiles: ${error.message}`);
+      else setMobiles(data);
     };
 
     const fetcFacilities = async () => {
@@ -74,21 +86,23 @@ function DashboardOverviewCard() {
     fetchSites();
     fetchDevices();
     fetcFacilities();
+    fetchMobiles();
   }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
+  const rentedMobiles = mobiles.filter((mobile) => mobile.is_rented).length;
+  const simCardMobiles = mobiles.filter((mobile) => mobile.has_sim_card).length;
+
   const cardData = [
-    { icon: SVGICON.DoubleUser, title: 'Clients', number: clients.length },
     { icon: SVGICON.Device, title: 'Devices', number: devices.length },
+    { icon: SVGICON.DealBox, title: 'Rented', number: rentedMobiles },
+    { icon: SVGICON.PostArticle, title: 'SIM', number: simCardMobiles },
+    { icon: SVGICON.DoubleUser, title: 'Clients', number: clients.length },
     { icon: SVGICON.LocationData, title: 'Sites', number: sites.length },
-    {
-      icon: SVGICON.Building,
-      title: 'Facilities',
-      number: facilities.length,
-    },
+    { icon: SVGICON.Building, title: 'Facilities', number: facilities.length },
   ];
 
   return (
@@ -155,11 +169,11 @@ function DashboardOverviewCard() {
           </div>
         </div>
         <div className="row">
-          <div className="col-xl-6 col-xxl-6 col-md-12">
+          <div className="col-xl-12 col-md-12">
             <div className="row g-3 mb-3">
               {' '}
               {cardData.map((data, ind) => (
-                <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={ind}>
+                <div className="col-6 col-lg-2" key={ind}>
                   {' '}
                   {/* Ajusta columnas según necesidad */}
                   <div className="border outline-dashed rounded p-2 d-flex align-items-center bg-white h-100">
@@ -227,13 +241,21 @@ function DashboardOverviewCard() {
                         </Link>
                       </h5>
                       <p className="d-block mb-0 text-primary">
-                        {device.mode} - {device.client.name}
+                        {device.mode} - {device.client?.name}
                       </p>
+                      {/* Nuevo: Unique ID, Model, IMEI */}
+                      <small className="d-block text-muted">
+                        ID:{' '}
+                        <span className="fw-bold">
+                          {device.mobile?.unique_id}
+                        </span>
+                        {' | '}
+                        Model: <span>{device.mobile?.model}</span>
+                      </small>
                     </div>
                     <p className="mb-0 fs-14 text-info">
                       {moment(device.created_at).format('DD MMM YYYY, h:mm A')}
-                    </p>{' '}
-                    {/* Fecha de ingreso */}
+                    </p>
                   </div>
                 ))}
               </div>
