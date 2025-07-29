@@ -111,12 +111,12 @@ const DeviceList = () => {
   // Definición de columnas
   const COLUMNS = [
     {
-      Header: 'Unique ID',
-      accessor: 'unique_id',
+      Header: 'Location',
+      accessor: 'location',
       Filter: ColumnFilter,
       Cell: ({ row }) => (
         <a href={`/device/${row.original.id}`} className="text-primary">
-          {row.original.unique_id}
+          {row.original.location}
         </a>
       ),
     },
@@ -135,11 +135,7 @@ const DeviceList = () => {
       accessor: 'facility_name',
       Filter: ColumnFilter,
     },
-    {
-      Header: 'Location',
-      accessor: 'location',
-      Filter: ColumnFilter,
-    },
+
     {
       Header: 'Mode',
       accessor: 'mode',
@@ -265,47 +261,44 @@ const DeviceList = () => {
   return (
     <>
       <PageTitle activeMenu="Devices" motherMenu="Table" />
+      {/* Alerta de confirmación */}
+      {showAlert && (
+        <div
+          role="alert"
+          className="fade notification alert alert-danger show mb-4"
+        >
+          <p className="notification-title mb-2">
+            <strong>Confirm Deletion</strong>
+          </p>
+          <p>Please enter the location of the device to confirm deletion:</p>
+          <input
+            type="text"
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+            className="form-control mb-2"
+            placeholder="Enter location"
+          />
+          <button
+            type="button"
+            onClick={confirmDelete}
+            className="btn btn-danger btn-sm me-2"
+          >
+            Confirm
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAlert(false)}
+            className="btn btn-link btn-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div className="card">
         <div className="card-header">
           <h4 className="card-title">Device List</h4>
         </div>
         <div className="card-body">
-          {/* Alerta de confirmación */}
-          {showAlert && (
-            <div
-              role="alert"
-              className="fade notification alert alert-danger show mb-4"
-            >
-              <p className="notification-title mb-2">
-                <strong>Confirm Deletion</strong>
-              </p>
-              <p>
-                Please enter the location of the device to confirm deletion:
-              </p>
-              <input
-                type="text"
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                className="form-control mb-2"
-                placeholder="Enter location"
-              />
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="btn btn-danger btn-sm me-2"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAlert(false)}
-                className="btn btn-link btn-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
           <div className="mb-3">
             <input
               type="text"
