@@ -1,6 +1,6 @@
+import { processLogs, getAdditionalInfo } from '../../helpers/logs';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase/client';
-import { toast } from 'react-toastify';
+import { fetchLogs } from '../../services/logs';
 import { Link } from 'react-router-dom';
 
 const ActivityDetail = ({ deviceId }) => {
@@ -8,149 +8,107 @@ const ActivityDetail = ({ deviceId }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const logsData = await fetchLogs();
+      const logsData = await fetchLogs(deviceId);
       if (logsData) {
-        const processedLogs = processLogs(logsData);
-        setLogs(processedLogs);
+        const processed = processLogs(logsData);
+        setLogs(processed);
       }
     };
-
     fetchData();
-  }, []);
+  }, [deviceId]);
 
-  const fetchLogs = async () => {
-    const { data, error } = await supabase
-      .from('logs')
-      .select('*')
-      .eq('table_name', 'devices')
-      .eq('record_id', deviceId)
-      .not('user_email', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(10);
+  const getMessage = (log) => {
+    let badgeClass = '';
+    let message = null;
 
-      console.log(data);
+    const info = getAdditionalInfo(
+      log.action === 'DELETE' ? log.old_data : log.new_data
+    );
 
-    if (error) {
-      toast.error(`Error fetching logs: ${error.message}`);
-    } else {
-      return data;
+    switch (log.action) {
+      case 'INSERT':
+        badgeClass = 'border-success';
+        message = (
+          <>
+            A new record was created in the table{' '}
+            <Link to={`/${log.table_name}`} className="text-info">
+              {log.table_name}
+            </Link>
+            .
+            {info && (
+              <>
+                <br />
+                <span className="font-monospace">{info}</span>
+              </>
+            )}
+            {log.user_email && (
+              <>
+                <br />
+                <span className="text-warning">{log.user_email}</span>
+              </>
+            )}
+          </>
+        );
+        break;
+      case 'UPDATE':
+        badgeClass = 'border-info';
+        message = (
+          <>
+            A record was updated in the table{' '}
+            <Link to={`/${log.table_name}`} className="text-info">
+              {log.table_name}
+            </Link>
+            .
+            {info && (
+              <>
+                <br />
+                <span className="font-monospace">{info}</span>
+              </>
+            )}
+            {log.user_email && (
+              <>
+                <br />
+                <span className="text-warning">{log.user_email}</span>
+              </>
+            )}
+          </>
+        );
+        break;
+      case 'DELETE':
+        badgeClass = 'border-danger';
+        message = (
+          <>
+            A record was deleted from the table{' '}
+            <Link to={`/${log.table_name}`} className="text-info">
+              {log.table_name}
+            </Link>
+            .
+            {info && (
+              <>
+                <br />
+                <span className="font-monospace">{info}</span>
+              </>
+            )}
+            {log.user_email && (
+              <>
+                <br />
+                <span className="text-warning">{log.user_email}</span>
+              </>
+            )}
+          </>
+        );
+        break;
+      default:
+        badgeClass = 'border-warning';
+        message = (
+          <>
+            Unknown action in the table{' '}
+            <span className="text-info">{log.table_name}</span> (ID:{' '}
+            <strong>{log.record_id}</strong>).
+          </>
+        );
     }
-  };
-
-  const getAdditionalInfo = (data, email) => {
-    if (data.name) {
-      return (
-        <>
-          <br />
-          <span className="font-monospace">Name: {data.name}</span>
-          {email && (
-            <>
-              <br />
-              <span className="text-warning">{email}</span>
-            </>
-          )}
-        </>
-      );
-    } else if (data.location) {
-      return (
-        <>
-          <br />
-          <span className="font-monospace">Location: {data.location}</span>
-          {email && (
-            <>
-              <br />
-              <span className="text-warning">{email}</span>
-            </>
-          )}
-        </>
-      );
-    }
-    return null;
-  };
-
-  const processLogs = (logs) => {
-    return logs.map((log) => {
-      const {
-        id,
-        table_name,
-        record_id,
-        action,
-        old_data,
-        new_data,
-        created_at,
-        user_email,
-      } = log;
-
-      const date = new Date(created_at);
-      const formattedDate = date.toLocaleString('es-CL', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-
-      let message = '';
-      let badgeClass = '';
-
-      switch (action) {
-        case 'INSERT':
-          message = (
-            <>
-              A new record was created in the table{' '}
-              <Link to={`/${table_name}`} className="text-info">
-                {table_name}
-              </Link>
-              .{getAdditionalInfo(new_data, user_email)}
-            </>
-          );
-          badgeClass = 'border-success';
-          break;
-
-        case 'UPDATE':
-          message = (
-            <>
-              A record was updated in the table{' '}
-              <Link to={`/${table_name}`} className="text-info">
-                {table_name}
-              </Link>
-              {getAdditionalInfo(new_data, user_email)}
-            </>
-          );
-          badgeClass = 'border-info';
-          break;
-
-        case 'DELETE':
-          message = (
-            <>
-              A record was deleted from the table{' '}
-              <Link to={`/${table_name}`} className="text-info">
-                {table_name}
-              </Link>
-              {getAdditionalInfo(old_data, user_email)}
-            </>
-          );
-          badgeClass = 'border-danger';
-          break;
-
-        default:
-          message = (
-            <>
-              Unknown action in the table{' '}
-              <span className="text-info">{table_name}</span> (ID:{' '}
-              <strong>{record_id}</strong>).
-            </>
-          );
-          badgeClass = 'border-warning';
-      }
-
-      return {
-        id,
-        date: formattedDate,
-        message,
-        badgeClass,
-      };
-    });
+    return { message, badgeClass };
   };
 
   return (
@@ -161,15 +119,18 @@ const ActivityDetail = ({ deviceId }) => {
       <div className="card-body">
         <div className="widget-timeline-status">
           <ul className="timeline">
-            {logs.map((log) => (
-              <li key={log.id} className="timeline-item">
-                <span className="timeline-status">{log.date}</span>
-                <div className={`timeline-badge ${log.badgeClass}`}></div>
-                <div className="timeline-panel">
-                  <span className="fs-14">{log.message}</span>
-                </div>
-              </li>
-            ))}
+            {logs.map((log) => {
+              const { message, badgeClass } = getMessage(log);
+              return (
+                <li key={log.id} className="timeline-item">
+                  <span className="timeline-status">{log.formattedDate}</span>
+                  <div className={`timeline-badge ${badgeClass}`}></div>
+                  <div className="timeline-panel">
+                    <span className="fs-14">{message}</span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
       </div>

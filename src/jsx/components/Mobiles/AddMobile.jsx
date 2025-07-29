@@ -8,8 +8,7 @@ import PageTitle from '../../layouts/PageTitle';
 const mobileSchema = Yup.object().shape({
   unique_id: Yup.string()
     .min(3, 'Unique ID must be at least 3 characters')
-    .max(50, 'Unique ID cannot exceed 50 characters')
-    .required('Unique ID is required'),
+    .max(50, 'Unique ID cannot exceed 50 characters'),
   imei: Yup.string()
     .min(5, 'IMEI must be at least 5 characters')
     .max(50, 'IMEI cannot exceed 50 characters')
@@ -77,24 +76,6 @@ const AddMobile = () => {
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">
-                            Unique ID <span className="required">*</span>
-                          </label>
-                          <Field
-                            type="text"
-                            name="unique_id"
-                            className="form-control"
-                            placeholder="Enter Unique ID"
-                          />
-                          <ErrorMessage
-                            name="unique_id"
-                            component="div"
-                            className="text-danger"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-lg-6 mb-2">
-                        <div className="form-group mb-3">
-                          <label className="text-label">
                             IMEI <span className="required">*</span>
                           </label>
                           <Field
@@ -105,6 +86,22 @@ const AddMobile = () => {
                           />
                           <ErrorMessage
                             name="imei"
+                            component="div"
+                            className="text-danger"
+                          />
+                        </div>
+                      </div>
+                      <div className="col-lg-6 mb-2">
+                        <div className="form-group mb-3">
+                          <label className="text-label">Unique ID</label>
+                          <Field
+                            type="text"
+                            name="unique_id"
+                            className="form-control"
+                            placeholder="Enter Unique ID"
+                          />
+                          <ErrorMessage
+                            name="unique_id"
                             component="div"
                             className="text-danger"
                           />
