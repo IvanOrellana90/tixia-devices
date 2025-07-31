@@ -19,6 +19,7 @@ import ActivityDetail from './ActivityDetail';
 import DeviceConfigurationForm from './DeviceConfigurationForm';
 import { toast } from 'react-toastify';
 import { fetchNagiosStatus } from '../../services/fetchNagiosStatus';
+import ServiceCard from './ServiceCard';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -329,6 +330,12 @@ const DeviceDetail = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="row">
+        <ServiceCard serviceName="ENERGY" hostName={device?.location} />
+        <ServiceCard serviceName="RAM_USAGE" hostName={device?.location} />
+        <ServiceCard serviceName="STORAGE_USAGE" hostName={device?.location} />
       </div>
 
       <div className="row">
