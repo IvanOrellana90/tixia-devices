@@ -43,7 +43,6 @@ export const fetchLogs = async (deviceId) => {
         .select('*')
         .eq('table_name', f.table)
         .eq('record_id', f.record)
-        .not('user_email', 'is', null)
         .order('created_at', { ascending: false })
         .limit(10);
 
