@@ -22,7 +22,6 @@ const ServiceCard = ({ serviceName = '', hostName = '' }) => {
     fetchNagiosHostService(serviceName, hostName).then((data) => {
       setServiceData(data?.service);
       setLoading(false);
-      console.log('Service data fetched:', data?.service);
     });
   }, [serviceName, hostName]);
 

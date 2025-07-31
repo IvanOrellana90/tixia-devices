@@ -345,8 +345,8 @@ const DeviceDetail = () => {
       </div>
 
       <div className="row">
-        <div className="col-xl-6 col-xxl-6 col-sm-12"></div>
-        <div className="col-md-6 col-xxl-6 col-sm-12">
+        <div className="col-md-12 col-xxl-6"></div>
+        <div className="col-md-12 col-xxl-6">
           <ActivityDetail deviceId={id} />
         </div>
       </div>

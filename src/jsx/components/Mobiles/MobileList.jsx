@@ -29,11 +29,20 @@ const MobileList = () => {
 
   useEffect(() => {
     const fetchMobiles = async () => {
-      const { data, error } = await supabase.from('mobiles').select('*');
+      const { data, error } = await supabase
+        .from('mobiles')
+        .select('*, devices(location, id)');
       if (error) {
         console.error('Error fetching mobiles:', error);
       } else {
-        setMobiles(data);
+        const dataWithDeviceLocation = data.map((row) => ({
+          ...row,
+          device_location:
+            row.devices && row.devices.length > 0
+              ? row.devices[0].location
+              : '',
+        }));
+        setMobiles(dataWithDeviceLocation);
       }
     };
 
@@ -42,18 +51,31 @@ const MobileList = () => {
 
   const COLUMNS = [
     {
-      Header: 'Unique ID',
-      accessor: 'unique_id',
+      Header: 'IMEI',
+      accessor: 'imei',
       Filter: ColumnFilter,
       Cell: ({ row }) => (
         <a href={`/mobile/${row.original.id}`} className="text-primary">
-          {row.original.unique_id}
+          {row.original.imei}
         </a>
       ),
     },
     {
-      Header: 'IMEI',
-      accessor: 'imei',
+      Header: 'Device',
+      accessor: 'device_location',
+      Filter: ColumnFilter,
+      Cell: ({ value, row }) => (
+        <a
+          href={`/device/${row.original.devices[0].id}`}
+          className="text-primary"
+        >
+          {value}
+        </a>
+      ),
+    },
+    {
+      Header: 'Unique ID',
+      accessor: 'unique_id',
       Filter: ColumnFilter,
     },
     {

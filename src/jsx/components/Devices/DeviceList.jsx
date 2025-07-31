@@ -44,7 +44,8 @@ const DeviceList = () => {
       facility:facility_id (name),
       site:site_id (name),
       mobile:mobile_id (
-        unique_id,
+        id,
+        imei,
         model
       )
     `
@@ -61,6 +62,8 @@ const DeviceList = () => {
           site_name: device.site?.name || '',
           unique_id: device.mobile?.unique_id || '',
           model: device.mobile?.model || '',
+          mobile: device.mobile || '',
+          mobile_imei: device.mobile?.imei || '',
         }));
         setDevices(devicesWithNames);
       }
@@ -118,6 +121,21 @@ const DeviceList = () => {
           {row.original.location}
         </a>
       ),
+    },
+    {
+      Header: 'Mobile',
+      accessor: 'mobile_imei',
+      Filter: ColumnFilter,
+      Cell: ({ row }) => {
+        const mobile = row.original.mobile;
+        return mobile ? (
+          <a href={`/mobile/${mobile.id}`} className="text-primary">
+            {mobile.imei}
+          </a>
+        ) : (
+          <span className="text-muted">Sin IMEI</span>
+        );
+      },
     },
     {
       Header: 'Client',
