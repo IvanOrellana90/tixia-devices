@@ -36,6 +36,8 @@ exports.handler = async (event) => {
       .eq('unique_id', unique_id)
       .single();
 
+      console.log('Datos obtenidos de Supabase:', data);
+
     if (error) {
       console.error('Error en Supabase:', error);
       return {
