@@ -65,6 +65,7 @@ const EditMobile = () => {
                         active: values.active,
                         is_rented: values.is_rented,
                         has_sim_card: values.has_sim_card,
+                        updated_at: new Date(),
                       })
                       .eq('id', id);
 
