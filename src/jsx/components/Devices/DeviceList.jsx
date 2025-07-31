@@ -49,7 +49,6 @@ const DeviceList = () => {
       )
     `
         )
-        .order('active')
         .order('activated_at', { ascending: false });
 
       if (error) {
@@ -140,19 +139,6 @@ const DeviceList = () => {
       Header: 'Mode',
       accessor: 'mode',
       Filter: ColumnFilter,
-    },
-    {
-      Header: 'State',
-      accessor: 'active',
-      Filter: ColumnFilter,
-      Cell: ({ value }) => (
-        <div className="d-flex align-items-center">
-          <i
-            className={`fa fa-circle me-2 ${value ? 'text-success' : 'text-danger'}`}
-          ></i>
-          {value ? 'Active' : 'Inactive'}
-        </div>
-      ),
     },
     {
       Header: 'Version',

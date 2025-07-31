@@ -14,6 +14,7 @@ import OverviewTab from './Tabs/OverviewTab';
 import ActivityTab from './Tabs/ActivityTab';
 
 import DevicesChart from './Data/DevicesChart';
+import { fetchNagiosHostStatus } from '../../services/fetchNagiosHostStatus';
 
 const ProfilePages = [
   { pagename: 'Overview', pageurl: 'dashboard-overview' },
@@ -26,11 +27,16 @@ function DashboardOverviewCard() {
   const [devices, setDevices] = useState([]);
   const [facilities, setFacilities] = useState([]);
   const [mobiles, setMobiles] = useState([]);
+  const [nagios, setNagios] = useState({});
 
   const [activeTab, setActiveTab] = useState('dashboard-overview');
 
-  const activeDevices = devices.filter((device) => device.active).length;
-  const inactiveDevices = devices.filter((device) => !device.active).length;
+  const activeDevices = Object.values(nagios?.hostlist || {}).filter(
+    (status) => status === 2
+  ).length;
+  const inactiveDevices = Object.values(nagios?.hostlist || {}).filter(
+    (status) => status === 4
+  ).length;
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -53,7 +59,6 @@ function DashboardOverviewCard() {
             id,
             location,
             mode,
-            active,
             updated_at,
             created_at,
             client:client_id (name),
@@ -82,11 +87,21 @@ function DashboardOverviewCard() {
       else setFacilities(data);
     };
 
+    const fetchNagios = async () => {
+      const status = await fetchNagiosHostStatus();
+      if (status) {
+        setNagios(status);
+      } else {
+        toast.error('Error fetching Nagios host status');
+      }
+    };
+
     fetchClients();
     fetchSites();
     fetchDevices();
     fetcFacilities();
     fetchMobiles();
+    fetchNagios();
   }, []);
 
   const handleTabChange = (tab) => {
@@ -113,7 +128,11 @@ function DashboardOverviewCard() {
         <div className="row">
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos activos */}
-            <a href="/active-devices" style={{ textDecoration: 'none' }}>
+            <a
+              href="https://nagios.ksec.cl/nagios/cgi-bin/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=2"
+              style={{ textDecoration: 'none' }}
+              target="_blank"
+            >
               <div
                 role="alert"
                 className="fade left-icon-big alert alert-success show"
@@ -141,7 +160,11 @@ function DashboardOverviewCard() {
           </div>
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos inactivos */}
-            <a href="/inactive-devices" style={{ textDecoration: 'none' }}>
+            <a
+              href="https://nagios.ksec.cl/nagios/cgi-bin/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12"
+              style={{ textDecoration: 'none' }}
+              target="_blank"
+            >
               <div
                 role="alert"
                 className="fade left-icon-big alert alert-danger show"
