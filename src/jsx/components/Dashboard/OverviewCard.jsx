@@ -153,6 +153,9 @@ function DashboardOverviewCard() {
                       Actual number of active devices:{' '}
                       <strong>{activeDevices}</strong>
                     </p>
+                    <small className="mb-0">
+                      <strong>Last update:</strong> {nagios.lastUpdate}
+                    </small>
                   </div>
                 </div>
               </div>
@@ -185,6 +188,9 @@ function DashboardOverviewCard() {
                       Actual number of inactive devices:{' '}
                       <strong>{inactiveDevices}</strong>
                     </p>
+                    <small className="mb-0">
+                      <strong>Last update:</strong> {nagios.lastUpdate}
+                    </small>
                   </div>
                 </div>
               </div>

@@ -19,11 +19,22 @@ exports.handler = async (event) => {
     console.log('Valor de unique_id recibido:', unique_id);
 
     const { data, error } = await supabase
-      .from('devices')
+      .from('mobiles')
       .select(
-        `site_ksec_id, facility_ksec_id, location, mode, clients (url, api_key)`
+        `
+        unique_id,
+        model,
+        devices (
+          site_ksec_id,
+          facility_ksec_id,
+          location,
+          mode,
+          clients (url, api_key)
+        )
+        `
       )
-      .eq('unique_id', unique_id);
+      .eq('unique_id', unique_id)
+      .single();
 
     if (error) {
       console.error('Error en Supabase:', error);

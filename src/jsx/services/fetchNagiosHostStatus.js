@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 const NAGIOS_URL =
   'https://nagios.ksec.cl/nagios/cgi-bin/statusjson.cgi?query=hostlist';
 
@@ -13,7 +15,9 @@ export async function fetchNagiosHostStatus() {
     const data = await response.json();
     return {
       hostlist: data.data.hostlist,
-      lastUpdate: data.result.last_data_update,
+      lastUpdate: moment(data.result.last_data_update).format(
+        'DD/MM/YYYY HH:mm'
+      ),
     };
   } catch (error) {
     console.error('Error al obtener estatus de Nagios:', error);

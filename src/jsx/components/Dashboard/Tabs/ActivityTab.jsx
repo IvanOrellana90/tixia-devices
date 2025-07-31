@@ -24,7 +24,6 @@ const ActivityTab = () => {
     const { data, error } = await supabase
       .from('logs')
       .select('*')
-      .not('user_email', 'is', null)
       .order('created_at', { ascending: false })
       .limit(10);
 

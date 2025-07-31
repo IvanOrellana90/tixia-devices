@@ -3,6 +3,12 @@ import { useEffect, useState } from 'react';
 import { fetchLogs } from '../../services/logs';
 import { Link } from 'react-router-dom';
 
+const TABLE_LABELS = {
+  devices: 'Device',
+  mobiles: 'Mobile',
+  device_configurations: 'Configuration',
+};
+
 const ActivityDetail = ({ deviceId }) => {
   const [logs, setLogs] = useState([]);
 
@@ -17,6 +23,10 @@ const ActivityDetail = ({ deviceId }) => {
     fetchData();
   }, [deviceId]);
 
+  const getTableLabel = (tableName) => {
+    return TABLE_LABELS[tableName] || tableName;
+  };
+
   const getMessage = (log) => {
     let badgeClass = '';
     let message = null;
@@ -30,9 +40,9 @@ const ActivityDetail = ({ deviceId }) => {
         badgeClass = 'border-success';
         message = (
           <>
-            A new record was created in the table{' '}
+            A new record was created in the{' '}
             <Link to={`/${log.table_name}`} className="text-info">
-              {log.table_name}
+              {getTableLabel(log.table_name)}
             </Link>
             .
             {info && (
@@ -54,9 +64,9 @@ const ActivityDetail = ({ deviceId }) => {
         badgeClass = 'border-info';
         message = (
           <>
-            A record was updated in the table{' '}
+            A record was updated in the{' '}
             <Link to={`/${log.table_name}`} className="text-info">
-              {log.table_name}
+              {getTableLabel(log.table_name)}
             </Link>
             .
             {info && (
@@ -78,9 +88,9 @@ const ActivityDetail = ({ deviceId }) => {
         badgeClass = 'border-danger';
         message = (
           <>
-            A record was deleted from the table{' '}
+            A record was deleted from the{' '}
             <Link to={`/${log.table_name}`} className="text-info">
-              {log.table_name}
+              {getTableLabel(log.table_name)}
             </Link>
             .
             {info && (
