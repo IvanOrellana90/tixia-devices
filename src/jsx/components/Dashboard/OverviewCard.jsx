@@ -10,11 +10,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { faPhoneFlip, faPhoneSlash } from '@fortawesome/free-solid-svg-icons';
 
-import OverviewTab from './Tabs/OverviewTab';
-import ActivityTab from './Tabs/ActivityTab';
-
 import DevicesChart from './Data/DevicesChart';
-import { fetchNagiosHostStatus } from '../../services/fetchNagiosHostStatus';
+import { fetchNagiosHostCount } from '../../services/fetchNagiosHostCount';
 
 const ProfilePages = [
   { pagename: 'Overview', pageurl: 'dashboard-overview' },
@@ -30,13 +27,6 @@ function DashboardOverviewCard() {
   const [nagios, setNagios] = useState({});
 
   const [activeTab, setActiveTab] = useState('dashboard-overview');
-
-  const activeDevices = Object.values(nagios?.hostlist || {}).filter(
-    (status) => status === 2
-  ).length;
-  const inactiveDevices = Object.values(nagios?.hostlist || {}).filter(
-    (status) => status === 4
-  ).length;
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -87,22 +77,25 @@ function DashboardOverviewCard() {
       else setFacilities(data);
     };
 
-    const fetchNagios = async () => {
-      const status = await fetchNagiosHostStatus();
-      if (status) {
-        setNagios(status);
-      } else {
-        toast.error('Error fetching Nagios host status');
-      }
-    };
-
     fetchClients();
     fetchSites();
     fetchDevices();
     fetcFacilities();
     fetchMobiles();
-    fetchNagios();
   }, []);
+
+  useEffect(() => {
+    const fetchNagios = async () => {
+      const status = await fetchNagiosHostCount();
+      if (status) setNagios(status);
+    };
+
+    fetchNagios();
+
+    const interval = setInterval(fetchNagios, 30000);
+
+    return () => clearInterval(interval);
+  }, [fetchNagiosHostCount]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -151,7 +144,7 @@ function DashboardOverviewCard() {
                     <h4 className="alert-heading">Active Devices</h4>
                     <p className="mb-0">
                       Actual number of active devices:{' '}
-                      <strong>{activeDevices}</strong>
+                      <strong>{nagios?.hostCount?.up}</strong>
                     </p>
                     <small className="mb-0">
                       <strong>Last update:</strong> {nagios.lastUpdate}
@@ -186,7 +179,7 @@ function DashboardOverviewCard() {
                     <h4 className="alert-heading">Inactive Devices</h4>
                     <p className="mb-0">
                       Actual number of inactive devices:{' '}
-                      <strong>{inactiveDevices}</strong>
+                      <strong>{nagios?.hostCount?.down}</strong>
                     </p>
                     <small className="mb-0">
                       <strong>Last update:</strong> {nagios.lastUpdate}
@@ -296,8 +289,8 @@ function DashboardOverviewCard() {
             </div>
           </div>
           <div className="mt-1">
-            {activeTab === 'dashboard-overview' && <OverviewTab />}
-            {activeTab === 'dashboard-activity' && <ActivityTab />}
+            {activeTab === 'dashboard-overview'}
+            {activeTab === 'dashboard-activity'}
           </div>
         </div>
       </Fragment>
