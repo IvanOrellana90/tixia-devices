@@ -39,13 +39,16 @@ const DeviceList = () => {
         .from('devices')
         .select(
           `
-        *,
-        clients:client_id (name),
-        facility:facility_id (name),
-        site:site_id (name)
-      `
+      *,
+      clients:client_id (name),
+      facility:facility_id (name),
+      site:site_id (name),
+      mobile:mobile_id (
+        unique_id,
+        model
+      )
+    `
         )
-        .order('active')
         .order('activated_at', { ascending: false });
 
       if (error) {
@@ -53,9 +56,11 @@ const DeviceList = () => {
       } else {
         const devicesWithNames = data.map((device) => ({
           ...device,
-          client_name: device.clients.name,
+          client_name: device.clients?.name || '',
           facility_name: device.facility?.name || '',
           site_name: device.site?.name || '',
+          unique_id: device.mobile?.unique_id || '',
+          model: device.mobile?.model || '',
         }));
         setDevices(devicesWithNames);
       }
@@ -105,19 +110,14 @@ const DeviceList = () => {
   // Definición de columnas
   const COLUMNS = [
     {
-      Header: 'Unique ID',
-      accessor: 'unique_id',
+      Header: 'Location',
+      accessor: 'location',
       Filter: ColumnFilter,
       Cell: ({ row }) => (
         <a href={`/device/${row.original.id}`} className="text-primary">
-          {row.original.unique_id}
+          {row.original.location}
         </a>
       ),
-    },
-    {
-      Header: 'Model',
-      accessor: 'model',
-      Filter: ColumnFilter,
     },
     {
       Header: 'Client',
@@ -134,28 +134,11 @@ const DeviceList = () => {
       accessor: 'facility_name',
       Filter: ColumnFilter,
     },
-    {
-      Header: 'Location',
-      accessor: 'location',
-      Filter: ColumnFilter,
-    },
+
     {
       Header: 'Mode',
       accessor: 'mode',
       Filter: ColumnFilter,
-    },
-    {
-      Header: 'State',
-      accessor: 'active',
-      Filter: ColumnFilter,
-      Cell: ({ value }) => (
-        <div className="d-flex align-items-center">
-          <i
-            className={`fa fa-circle me-2 ${value ? 'text-success' : 'text-danger'}`}
-          ></i>
-          {value ? 'Active' : 'Inactive'}
-        </div>
-      ),
     },
     {
       Header: 'Version',
@@ -264,47 +247,44 @@ const DeviceList = () => {
   return (
     <>
       <PageTitle activeMenu="Devices" motherMenu="Table" />
+      {/* Alerta de confirmación */}
+      {showAlert && (
+        <div
+          role="alert"
+          className="fade notification alert alert-danger show mb-4"
+        >
+          <p className="notification-title mb-2">
+            <strong>Confirm Deletion</strong>
+          </p>
+          <p>Please enter the location of the device to confirm deletion:</p>
+          <input
+            type="text"
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+            className="form-control mb-2"
+            placeholder="Enter location"
+          />
+          <button
+            type="button"
+            onClick={confirmDelete}
+            className="btn btn-danger btn-sm me-2"
+          >
+            Confirm
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAlert(false)}
+            className="btn btn-link btn-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div className="card">
         <div className="card-header">
           <h4 className="card-title">Device List</h4>
         </div>
         <div className="card-body">
-          {/* Alerta de confirmación */}
-          {showAlert && (
-            <div
-              role="alert"
-              className="fade notification alert alert-danger show mb-4"
-            >
-              <p className="notification-title mb-2">
-                <strong>Confirm Deletion</strong>
-              </p>
-              <p>
-                Please enter the location of the device to confirm deletion:
-              </p>
-              <input
-                type="text"
-                value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                className="form-control mb-2"
-                placeholder="Enter location"
-              />
-              <button
-                type="button"
-                onClick={confirmDelete}
-                className="btn btn-danger btn-sm me-2"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAlert(false)}
-                className="btn btn-link btn-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
           <div className="mb-3">
             <input
               type="text"

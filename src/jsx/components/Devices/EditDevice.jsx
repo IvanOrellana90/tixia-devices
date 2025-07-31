@@ -7,14 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 const deviceSchema = Yup.object().shape({
-  unique_id: Yup.string()
-    .min(3, 'Unique ID must be at least 3 characters')
-    .max(50, 'Unique ID cannot exceed 50 characters')
-    .required('Unique ID is required'),
-  model: Yup.string()
-    .min(3, 'Model must be at least 3 characters')
-    .max(50, 'Model cannot exceed 50 characters')
-    .required('Model is required'),
+  mobile_id: Yup.string().required('Unique ID is required'),
   client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string()
@@ -33,7 +26,23 @@ const EditDevice = () => {
   const [clients, setClients] = useState([]);
   const [sites, setSites] = useState([]);
   const [facilities, setFacilities] = useState([]);
-  const [initialValues, setInitialValues] = useState(null);
+  const [mobiles, setMobiles] = useState([]);
+
+  useEffect(() => {
+    const fetchMobiles = async () => {
+      const { data, error } = await supabase
+        .from('mobiles')
+        .select('id, unique_id')
+        .order('unique_id', { ascending: true });
+      if (error) {
+        toast.error(`Error fetching mobiles: ${error.message}`);
+      } else {
+        setMobiles(data);
+      }
+    };
+
+    fetchMobiles();
+  }, []);
 
   useEffect(() => {
     const fetchDevice = async () => {
@@ -130,8 +139,7 @@ const EditDevice = () => {
       }
 
       const cleanedValues = {
-        unique_id: values.unique_id.trim(),
-        model: values.model.trim(),
+        mobile_id: values.mobile_id,
         client_id: values.client_id,
         site_id: selectedSite.id,
         site_ksec_id: values.site_ksec_id,
@@ -176,8 +184,7 @@ const EditDevice = () => {
               <div className="form-validation">
                 <Formik
                   initialValues={{
-                    unique_id: device.unique_id,
-                    model: device.model,
+                    mobile_id: device.mobile_id || '',
                     client_id: device.client_id,
                     site_ksec_id: device.site_ksec_id,
                     facility_ksec_id: device.facility_ksec_id || '',
@@ -197,32 +204,20 @@ const EditDevice = () => {
                               Unique ID <span className="required">*</span>
                             </label>
                             <Field
-                              type="text"
-                              name="unique_id"
+                              as="select"
+                              name="mobile_id"
                               className="form-control"
-                              placeholder="Device Unique ID"
-                            />
+                              placeholder="Select Unique ID"
+                            >
+                              <option value="">Select Unique ID</option>
+                              {mobiles.map((mobile) => (
+                                <option key={mobile.id} value={mobile.id}>
+                                  {mobile.unique_id}
+                                </option>
+                              ))}
+                            </Field>
                             <ErrorMessage
-                              name="unique_id"
-                              component="div"
-                              className="text-danger"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="col-lg-6 mb-2">
-                          <div className="form-group mb-3">
-                            <label className="text-label">
-                              Model <span className="required">*</span>
-                            </label>
-                            <Field
-                              type="text"
-                              name="model"
-                              className="form-control"
-                              placeholder="Device Model"
-                            />
-                            <ErrorMessage
-                              name="model"
+                              name="mobile_id"
                               component="div"
                               className="text-danger"
                             />

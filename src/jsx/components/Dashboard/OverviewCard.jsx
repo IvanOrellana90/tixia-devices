@@ -14,6 +14,7 @@ import OverviewTab from './Tabs/OverviewTab';
 import ActivityTab from './Tabs/ActivityTab';
 
 import DevicesChart from './Data/DevicesChart';
+import { fetchNagiosHostStatus } from '../../services/fetchNagiosHostStatus';
 
 const ProfilePages = [
   { pagename: 'Overview', pageurl: 'dashboard-overview' },
@@ -25,11 +26,17 @@ function DashboardOverviewCard() {
   const [sites, setSites] = useState([]);
   const [devices, setDevices] = useState([]);
   const [facilities, setFacilities] = useState([]);
+  const [mobiles, setMobiles] = useState([]);
+  const [nagios, setNagios] = useState({});
 
   const [activeTab, setActiveTab] = useState('dashboard-overview');
 
-  const activeDevices = devices.filter((device) => device.active).length;
-  const inactiveDevices = devices.filter((device) => !device.active).length;
+  const activeDevices = Object.values(nagios?.hostlist || {}).filter(
+    (status) => status === 2
+  ).length;
+  const inactiveDevices = Object.values(nagios?.hostlist || {}).filter(
+    (status) => status === 4
+  ).length;
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -49,19 +56,29 @@ function DashboardOverviewCard() {
         .from('devices')
         .select(
           `
-                    id,
-                    location,
-                    mode,
-                    model,
-                    updated_at,
-                    created_at,
-                    active,
-                    client:client_id (name)
-                `
+            id,
+            location,
+            mode,
+            updated_at,
+            created_at,
+            client:client_id (name),
+            mobile:mobile_id (
+              id,
+              unique_id,
+              imei,
+              model
+            )
+          `
         )
         .order('created_at', { ascending: false });
       if (error) toast.error(`Error fetching devices: ${error.message}`);
       else setDevices(data);
+    };
+
+    const fetchMobiles = async () => {
+      const { data, error } = await supabase.from('mobiles').select('*');
+      if (error) toast.error(`Error fetching mobiles: ${error.message}`);
+      else setMobiles(data);
     };
 
     const fetcFacilities = async () => {
@@ -70,25 +87,37 @@ function DashboardOverviewCard() {
       else setFacilities(data);
     };
 
+    const fetchNagios = async () => {
+      const status = await fetchNagiosHostStatus();
+      if (status) {
+        setNagios(status);
+      } else {
+        toast.error('Error fetching Nagios host status');
+      }
+    };
+
     fetchClients();
     fetchSites();
     fetchDevices();
     fetcFacilities();
+    fetchMobiles();
+    fetchNagios();
   }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
+  const rentedMobiles = mobiles.filter((mobile) => mobile.is_rented).length;
+  const simCardMobiles = mobiles.filter((mobile) => mobile.has_sim_card).length;
+
   const cardData = [
-    { icon: SVGICON.DoubleUser, title: 'Clients', number: clients.length },
     { icon: SVGICON.Device, title: 'Devices', number: devices.length },
+    { icon: SVGICON.DealBox, title: 'Rented', number: rentedMobiles },
+    { icon: SVGICON.PostArticle, title: 'SIM', number: simCardMobiles },
+    { icon: SVGICON.DoubleUser, title: 'Clients', number: clients.length },
     { icon: SVGICON.LocationData, title: 'Sites', number: sites.length },
-    {
-      icon: SVGICON.Building,
-      title: 'Facilities',
-      number: facilities.length,
-    },
+    { icon: SVGICON.Building, title: 'Facilities', number: facilities.length },
   ];
 
   return (
@@ -99,7 +128,11 @@ function DashboardOverviewCard() {
         <div className="row">
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos activos */}
-            <a href="/active-devices" style={{ textDecoration: 'none' }}>
+            <a
+              href="https://nagios.ksec.cl/nagios/cgi-bin/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=2"
+              style={{ textDecoration: 'none' }}
+              target="_blank"
+            >
               <div
                 role="alert"
                 className="fade left-icon-big alert alert-success show"
@@ -120,6 +153,9 @@ function DashboardOverviewCard() {
                       Actual number of active devices:{' '}
                       <strong>{activeDevices}</strong>
                     </p>
+                    <small className="mb-0">
+                      <strong>Last update:</strong> {nagios.lastUpdate}
+                    </small>
                   </div>
                 </div>
               </div>
@@ -127,7 +163,11 @@ function DashboardOverviewCard() {
           </div>
           <div className="col-xl-6 col-xxl-6 col-lg-6 col-sm-6">
             {/* Alerta para dispositivos inactivos */}
-            <a href="/inactive-devices" style={{ textDecoration: 'none' }}>
+            <a
+              href="https://nagios.ksec.cl/nagios/cgi-bin/status.cgi?hostgroup=all&style=hostdetail&hoststatustypes=12"
+              style={{ textDecoration: 'none' }}
+              target="_blank"
+            >
               <div
                 role="alert"
                 className="fade left-icon-big alert alert-danger show"
@@ -148,6 +188,9 @@ function DashboardOverviewCard() {
                       Actual number of inactive devices:{' '}
                       <strong>{inactiveDevices}</strong>
                     </p>
+                    <small className="mb-0">
+                      <strong>Last update:</strong> {nagios.lastUpdate}
+                    </small>
                   </div>
                 </div>
               </div>
@@ -155,11 +198,11 @@ function DashboardOverviewCard() {
           </div>
         </div>
         <div className="row">
-          <div className="col-xl-6 col-xxl-6 col-md-12">
+          <div className="col-xl-12 col-md-12">
             <div className="row g-3 mb-3">
               {' '}
               {cardData.map((data, ind) => (
-                <div className="col-6 col-sm-4 col-md-3 col-lg-2" key={ind}>
+                <div className="col-6 col-lg-2" key={ind}>
                   {' '}
                   {/* Ajusta columnas según necesidad */}
                   <div className="border outline-dashed rounded p-2 d-flex align-items-center bg-white h-100">
@@ -227,13 +270,21 @@ function DashboardOverviewCard() {
                         </Link>
                       </h5>
                       <p className="d-block mb-0 text-primary">
-                        {device.mode} - {device.client.name}
+                        {device.mode} - {device.client?.name}
                       </p>
+                      {/* Nuevo: Unique ID, Model, IMEI */}
+                      <small className="d-block text-muted">
+                        ID:{' '}
+                        <span className="fw-bold">
+                          {device.mobile?.unique_id}
+                        </span>
+                        {' | '}
+                        Model: <span>{device.mobile?.model}</span>
+                      </small>
                     </div>
                     <p className="mb-0 fs-14 text-info">
                       {moment(device.created_at).format('DD MMM YYYY, h:mm A')}
-                    </p>{' '}
-                    {/* Fecha de ingreso */}
+                    </p>
                   </div>
                 ))}
               </div>
