@@ -16,14 +16,11 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log('Valor de unique_id recibido:', unique_id);
-
     const { data, error } = await supabase
       .from('mobiles')
       .select(
         `
         unique_id,
-        model,
         devices (
           site_ksec_id,
           facility_ksec_id,
@@ -31,29 +28,42 @@ exports.handler = async (event) => {
           mode,
           clients (url, api_key)
         )
-        `
+      `
       )
       .eq('unique_id', unique_id)
       .single();
 
     if (error) {
-      console.error('Error en Supabase:', error);
       return {
         statusCode: 400,
         body: JSON.stringify({ error: error.message }),
       };
     }
 
-    if (!data || data.length === 0) {
+    if (!data || !data.devices || !data.devices.length) {
       return {
         statusCode: 404,
         body: JSON.stringify({ error: 'Dispositivo no encontrado' }),
       };
     }
 
+    // Tomar el primer device relacionado (ajusta si hay varios)
+    const device = data.devices[0];
+
+    // Armar respuesta plana para el frontend
+    const response = {
+      site_ksec_id: device.site_ksec_id,
+      facility_ksec_id: device.facility_ksec_id,
+      location: device.location,
+      mode: device.mode,
+      clients: device.clients,
+      // puedes agregar aquí más campos si los necesitas
+    };
+
     return {
       statusCode: 200,
-      body: JSON.stringify(data),
+      body: JSON.stringify(response),
+      headers: { 'Content-Type': 'application/json' },
     };
   } catch (err) {
     return {
