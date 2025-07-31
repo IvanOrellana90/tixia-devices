@@ -31,6 +31,10 @@ import SiteList from './components/Sites/SiteList';
 import AddFacility from './components/Facilities/AddFacility';
 import FacilityList from './components/Facilities/FacilityList';
 
+// Mobile
+import AddMobile from './components/Mobiles/AddMobile';
+import MobileList from './components/Mobiles/MobileList';
+
 // Device
 import AddDevice from './components/Devices/AddDevice';
 import DeviceList from './components/Devices/DeviceList';
@@ -42,6 +46,7 @@ import DeviceDetail from './components/Devices/DeviceDetail';
 // Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
+import EditMobile from './components/Mobiles/EditMobile';
 
 const Markup = () => {
   const allroutes = [
@@ -64,6 +69,12 @@ const Markup = () => {
     { url: 'add-facility', component: <AddFacility /> },
     { url: 'facility-list', component: <FacilityList /> },
     { url: 'facilities', component: <FacilityList /> },
+
+    //Mobile
+    { url: 'add-mobile', component: <AddMobile /> },
+    { url: 'mobile-list', component: <MobileList /> },
+    { url: 'mobiles', component: <MobileList /> },
+    { url: 'edit-mobile/:id', component: <EditMobile /> },
 
     //Device
     { url: 'add-device', component: <AddDevice /> },
