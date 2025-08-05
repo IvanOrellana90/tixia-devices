@@ -64,6 +64,7 @@ const EditDevice = () => {
               .from('sites')
               .select('id')
               .eq('ksec_id', data.site_ksec_id)
+              .eq('client_id', data.client_id)
               .single();
             if (site.data) {
               await fetchFacilities(site.data.id);
@@ -233,15 +234,13 @@ const EditDevice = () => {
                               as="select"
                               name="client_id"
                               className="form-control"
-                              onChange={(e) => {
-                                setFieldValue('client_id', e.target.value);
-                                setFieldValue('site_ksec_id', ''); // Resetear site_ksec_id
-                                setFieldValue('facility_ksec_id', ''); // Resetear facility_ksec_id
-                                fetchSites(
-                                  e.target.selectedOptions[0].getAttribute(
-                                    'data-id'
-                                  )
-                                ); // Obtener sites filtrados
+                              onChange={async (e) => {
+                                const clientId = e.target.value;
+                                setFieldValue('client_id', clientId);
+                                setFieldValue('site_ksec_id', '');
+                                setFieldValue('facility_ksec_id', '');
+                                await fetchSites(clientId);
+                                setFacilities([]); // limpiar facilities
                               }}
                             >
                               <option value="">Select a Client</option>
@@ -272,15 +271,21 @@ const EditDevice = () => {
                               as="select"
                               name="site_ksec_id"
                               className="form-control"
-                              disabled={!values.client_id} // Deshabilitar si no hay client_id
-                              onChange={(e) => {
-                                setFieldValue('site_ksec_id', e.target.value);
-                                setFieldValue('facility_ksec_id', ''); // Resetear facility_ksec_id
-                                fetchFacilities(
-                                  e.target.selectedOptions[0].getAttribute(
-                                    'data-id'
-                                  )
-                                ); // Obtener facilities filtrados
+                              disabled={!values.client_id}
+                              onChange={async (e) => {
+                                const ksecId = e.target.value;
+                                setFieldValue('site_ksec_id', ksecId);
+                                setFieldValue('facility_ksec_id', '');
+                                // Buscar el site por ksec_id y obtener el id real
+                                const selectedSite = sites.find(
+                                  (site) =>
+                                    String(site.ksec_id) === String(ksecId)
+                                );
+                                if (selectedSite) {
+                                  await fetchFacilities(selectedSite.id);
+                                } else {
+                                  setFacilities([]);
+                                }
                               }}
                             >
                               <option value="">Select a Site</option>
