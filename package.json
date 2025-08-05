@@ -2,13 +2,13 @@
   "name": "tixia",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "sass": "sass --watch src/assets/scss/main.scss src/assets/css/style.css",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "netlify": "netlify dev"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^43.3.1",
