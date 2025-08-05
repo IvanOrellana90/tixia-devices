@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchNagiosHostService } from '../../services/fetchNagiosHostService';
+import { fetchNagiosHostService } from '../../services/nagiosService';
 import {
   serviceTitle,
   extractPercentage,
