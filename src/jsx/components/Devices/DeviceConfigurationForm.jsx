@@ -14,6 +14,13 @@ const configFields = [
     initial: 'False',
   },
   {
+    key: 'orientation_mode',
+    label: 'Orientation Mode',
+    type: 'select',
+    options: ['default', 'horizontal', 'vertical'],
+    initial: 'default',
+  },
+  {
     key: 'config_mode',
     label: 'Config Mode',
     type: 'select',
@@ -131,6 +138,7 @@ const DeviceConfigurationForm = ({ deviceId }) => {
   );
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
+  const [isSendingPush, setIsSendingPush] = useState(false);
 
   // Carga config actual (si existe)
   useEffect(() => {
@@ -153,20 +161,46 @@ const DeviceConfigurationForm = ({ deviceId }) => {
       .finally(() => setLoading(false));
   }, [deviceId]);
 
+  const handleSendPush = async () => {
+    setIsSendingPush(true);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_URL}/.netlify/functions/sendPushToDevice`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            device_id: deviceId,
+            title: '¡Actualización de configuración!',
+            body: 'Hay una nueva configuración disponible para tu dispositivo.',
+          }),
+        }
+      );
+      const result = await res.json();
+      if (result.success || result.message_id) {
+        toast.success('Push enviado correctamente');
+      } else {
+        toast.error('Error enviando push: ' + JSON.stringify(result));
+      }
+    } catch (e) {
+      toast.error('Error enviando push: ' + e.message);
+    } finally {
+      setIsSendingPush(false);
+    }
+  };
+
   const handleSubmit = async (values, { setSubmitting }) => {
     setSubmitting(true);
-    const { error } = await supabase
-      .from('device_configurations')
-      .upsert(
-        [
-          {
-            device_id: deviceId,
-            configuration: values,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        { onConflict: 'device_id' }
-      );
+    const { error } = await supabase.from('device_configurations').upsert(
+      [
+        {
+          device_id: deviceId,
+          configuration: values,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: 'device_id' }
+    );
     if (error) {
       toast.error(error.message);
     } else {
@@ -180,13 +214,28 @@ const DeviceConfigurationForm = ({ deviceId }) => {
       <div className="row">
         <div className="col-lg-12">
           <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
+            <div
+              className="card-header d-flex justify-content-between align-items-center"
+              style={{
+                cursor: 'pointer',
+                background: collapsed ? '#ffffff' : '#e8ecef',
+                transition: 'background 0.2s',
+                userSelect: 'none',
+              }}
+              onClick={() => setCollapsed((prev) => !prev)}
+            >
               <h4 className="card-title">Device Configuration</h4>
               <button
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => setCollapsed((prev) => !prev)}
+                className="btn btn-outline-primary btn-sm ms-2"
+                onClick={handleSendPush}
+                disabled={isSendingPush}
               >
-                {collapsed ? 'Expand' : 'Collapse'}
+                {isSendingPush ? (
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                ) : (
+                  <i className="fa fa-bell me-2"></i>
+                )}
+                Enviar Push
               </button>
             </div>
             <div

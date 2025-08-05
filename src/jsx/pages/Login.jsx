@@ -42,7 +42,7 @@ const Login = () => {
       try {
         const { error } = await supabase.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: import.meta.env.VITE_LOGIN_REDIRECT_URL },
+          options: { emailRedirectTo: `${import.meta.env.VITE_URL}/` },
         });
 
         if (error) throw error;
