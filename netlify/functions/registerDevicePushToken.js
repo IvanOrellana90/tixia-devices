@@ -1,5 +1,4 @@
 const { createClient } = require('@supabase/supabase-js');
-
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
@@ -7,29 +6,53 @@ const supabase = createClient(
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Not Allowed' };
+    return { statusCode: 405, body: 'Metodo no permitido' };
   }
 
-  const { device_id, push_token } = JSON.parse(event.body);
+  const { unique_id, push_token } = JSON.parse(event.body);
 
-  if (!device_id || !push_token) {
-    return { statusCode: 400, body: 'device_id y push_token requeridos' };
+  if (!unique_id || !push_token) {
+    return { statusCode: 400, body: 'unique_id y push_token son requeridos' };
   }
 
-  // Elimina tokens anteriores de ese device (opcional, según tu lógica)
-  await supabase.from('device_push_tokens').delete().eq('device_id', device_id);
+  // 1. Buscar mobile_id
+  const { data: mobile, error: mobileError } = await supabase
+    .from('mobiles')
+    .select('id')
+    .eq('unique_id', unique_id)
+    .single();
 
-  // Inserta el nuevo token (puedes cambiar a UPSERT si lo prefieres)
-  const { error } = await supabase.from('device_push_tokens').insert([
-    {
-      device_id,
-      push_token,
-      updated_at: new Date().toISOString(),
-    },
-  ]);
+  if (mobileError || !mobile) {
+    return { statusCode: 404, body: 'Mobile no encontrado' };
+  }
 
-  if (error) {
-    return { statusCode: 500, body: JSON.stringify(error) };
+  // 2. Buscar device_id
+  const { data: device, error: deviceError } = await supabase
+    .from('devices')
+    .select('id')
+    .eq('mobile_id', mobile.id)
+    .single();
+
+  if (deviceError || !device) {
+    return { statusCode: 404, body: 'Device no encontrado para ese móvil' };
+  }
+
+  // 3. Guardar el token usando el device_id (entero)
+  const { error: insertError } = await supabase
+    .from('device_push_tokens')
+    .upsert(
+      [
+        {
+          device_id: device.id,
+          push_token,
+          updated_at: new Date().toISOString(),
+        },
+      ],
+      { onConflict: ['device_id'] }
+    );
+
+  if (insertError) {
+    return { statusCode: 500, body: JSON.stringify(insertError) };
   }
 
   return { statusCode: 200, body: JSON.stringify({ ok: true }) };
