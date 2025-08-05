@@ -29,6 +29,7 @@
     "formik": "^2.4.6",
     "lightgallery": "^2.8.1",
     "moment": "^2.30.1",
+    "node-fetch": "^2.7.0",
     "nouislider-react": "^3.4.2",
     "p-min-delay": "^4.0.2",
     "react": "^18.3.1",
