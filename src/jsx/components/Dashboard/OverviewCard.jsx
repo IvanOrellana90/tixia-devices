@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhoneFlip, faPhoneSlash } from '@fortawesome/free-solid-svg-icons';
 
 import DevicesChart from './Data/DevicesChart';
-import { fetchNagiosHostCount } from '../../services/fetchNagiosHostCount';
+import { fetchNagiosHostCount } from '../../services/nagiosService';
 
 const ProfilePages = [
   { pagename: 'Overview', pageurl: 'dashboard-overview' },

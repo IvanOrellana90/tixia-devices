@@ -18,7 +18,7 @@ import {
 import ActivityDetail from './ActivityDetail';
 import DeviceConfigurationForm from './DeviceConfigurationForm';
 import { toast } from 'react-toastify';
-import { fetchNagiosStatus } from '../../services/fetchNagiosStatus';
+import { fetchNagiosStatus } from '../../services/nagiosService';
 import ServiceCard from './ServiceCard';
 
 const DeviceDetail = () => {
