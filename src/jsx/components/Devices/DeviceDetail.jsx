@@ -253,7 +253,9 @@ const DeviceDetail = () => {
                 {/* Device Info */}
                 <div className="col-md-9">
                   <div className="clearfix pe-md-5">
-                    <h3 className="display-6 mb-2">{device?.location}</h3>
+                    <h3 className="display-6 mb-2">
+                      <strong>{device?.location}</strong>
+                    </h3>
                     <ul className="d-flex flex-column fs-6">
                       {/* Unique ID */}
                       <li className="mb-1 d-flex align-items-center">

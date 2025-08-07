@@ -1,58 +1,135 @@
-// sendPushToDevice.js
 const { createClient } = require('@supabase/supabase-js');
-const fetch = require('node-fetch');
+const admin = require('firebase-admin');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-); // Usa SERVICE_KEY para bypass RLS
-const FCM_SERVER_KEY = process.env.FCM_SERVER_KEY; // tu clave de servidor FCM
+const { SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_SERVICE_ACCOUNT_KEY } =
+  process.env;
+
+// Initialize Firebase Admin
+const initializeFirebase = () => {
+  if (admin.apps.length) return admin.app();
+
+  const serviceAccount = JSON.parse(GOOGLE_SERVICE_ACCOUNT_KEY);
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+  return admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    projectId: serviceAccount.project_id,
+  });
+};
+
+const jsonResponse = (status, body) => ({
+  statusCode: status,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Metodo no permitido' };
+    return jsonResponse(405, { error: 'Method not allowed' });
   }
 
-  const { device_id, title, body } = JSON.parse(event.body);
+  try {
+    const { device_id, unique_id, title, body } = JSON.parse(
+      event.body || '{}'
+    );
 
-  if (!device_id || !title || !body) {
-    return { statusCode: 400, body: 'device_id, title y body requeridos' };
+    if (!device_id && !unique_id) {
+      return jsonResponse(400, { error: 'Device ID or Unique ID required' });
+    }
+
+    // Initialize services
+    const app = initializeFirebase();
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+    });
+
+    // Resolve device ID
+    let deviceId = device_id;
+    if (!deviceId && unique_id) {
+      const { data: mobile } = await supabase
+        .from('mobiles')
+        .select('id')
+        .eq('unique_id', unique_id)
+        .single();
+
+      if (!mobile) return jsonResponse(404, { error: 'Mobile not found' });
+
+      const { data: device } = await supabase
+        .from('devices')
+        .select('id')
+        .eq('mobile_id', mobile.id)
+        .single();
+
+      if (!device) return jsonResponse(404, { error: 'Device not found' });
+
+      deviceId = device.id;
+    }
+
+    // Get push token
+    const { data: token } = await supabase
+      .from('device_push_tokens')
+      .select('push_token')
+      .eq('device_id', deviceId)
+      .single();
+
+    if (!token?.push_token) {
+      return jsonResponse(404, { error: 'No push token for device' });
+    }
+
+    // Send push notification
+    const message = {
+      token: token.push_token,
+      notification: {
+        title: title || 'Configuration update',
+        body: body || 'New configuration available',
+      },
+      data: { action: 'updateConfig' },
+      android: { priority: 'high' },
+      apns: { headers: { 'apns-priority': '10' } },
+    };
+
+    const messageId = await admin.messaging(app).send(message);
+
+    // Update push status
+    await supabase
+      .from('device_push_tokens')
+      .update({
+        last_pushed_at: new Date().toISOString(),
+        last_push_status: 'success',
+      })
+      .eq('device_id', deviceId);
+
+    return jsonResponse(200, {
+      success: true,
+      messageId,
+      deviceId,
+    });
+  } catch (error) {
+    console.error('Error:', error);
+
+    // Handle specific FCM errors
+    if (error.code === 'messaging/registration-token-not-registered') {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          auth: { persistSession: false },
+        });
+
+        await supabase
+          .from('device_push_tokens')
+          .delete()
+          .eq('device_id', deviceId);
+      } catch (dbError) {
+        console.error('Failed to remove invalid token:', dbError);
+      }
+
+      return jsonResponse(410, {
+        error: 'Invalid token - removed from database',
+        action: 'regenerate_token',
+      });
+    }
+
+    return jsonResponse(500, {
+      error: error.message || 'Internal server error',
+    });
   }
-
-  // 1. Buscar el token push en device_push_tokens
-  const { data, error } = await supabase
-    .from('device_push_tokens')
-    .select('push_token')
-    .eq('device_id', device_id)
-    .maybeSingle();
-
-  if (error || !data) {
-    return { statusCode: 404, body: 'No push token found for device' };
-  }
-
-  // 2. Enviar push a FCM
-  const pushToken = data.push_token;
-  const fcmMessage = {
-    to: pushToken,
-    notification: {
-      title,
-      body,
-    },
-    data: {
-      type: 'custom',
-      ts: Date.now(),
-    },
-  };
-
-  const fcmRes = await fetch('https://fcm.googleapis.com/fcm/send', {
-    method: 'POST',
-    headers: {
-      Authorization: `key=${FCM_SERVER_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(fcmMessage),
-  });
-
-  const fcmResult = await fcmRes.json();
-  return { statusCode: 200, body: JSON.stringify(fcmResult) };
 };
