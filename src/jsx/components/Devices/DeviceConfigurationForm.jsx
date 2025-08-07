@@ -1,10 +1,12 @@
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
+import moment from 'moment';
 
-// Lista de parámetros y su configuración inicial y tipo de campo
 const configFields = [
   {
     key: 'debug_mode',
@@ -117,14 +119,12 @@ const configFields = [
   },
 ];
 
-// Validación Yup (puedes expandirlo si quieres validaciones más estrictas)
 const configSchema = Yup.object(
   configFields.reduce((acc, field) => {
-    if (field.type === 'number') {
-      acc[field.key] = Yup.number().typeError('Must be a number');
-    } else {
-      acc[field.key] = Yup.string();
-    }
+    acc[field.key] =
+      field.type === 'number'
+        ? Yup.number().typeError('Must be a number')
+        : Yup.string();
     return acc;
   }, {})
 );
@@ -139,181 +139,268 @@ const DeviceConfigurationForm = ({ deviceId }) => {
   const [loading, setLoading] = useState(false);
   const [collapsed, setCollapsed] = useState(true);
   const [isSendingPush, setIsSendingPush] = useState(false);
+  const [pushTokenInfo, setPushTokenInfo] = useState(null);
+  const [loadingPushToken, setLoadingPushToken] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Carga config actual (si existe)
   useEffect(() => {
     if (!deviceId) return;
-    setLoading(true);
-    supabase
-      .from('device_configurations')
-      .select('configuration')
-      .eq('device_id', deviceId)
-      .single()
-      .then(({ data, error }) => {
-        if (error && error.code !== 'PGRST116') {
-          toast.error(error.message);
-        }
-        // Si no hay data, simplemente no hagas nada (usarás el estado por defecto)
-        if (data && data.configuration) {
-          setInitialConfig((prev) => ({ ...prev, ...data.configuration }));
-        }
-      })
-      .finally(() => setLoading(false));
+
+    const loadConfig = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('device_configurations')
+        .select('configuration')
+        .eq('device_id', deviceId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        toast.error(error.message);
+      }
+      if (data?.configuration) {
+        setInitialConfig((prev) => ({ ...prev, ...data.configuration }));
+      }
+      setLoading(false);
+    };
+
+    const loadPushToken = async () => {
+      setLoadingPushToken(true);
+      const { data, error } = await supabase
+        .from('device_push_tokens')
+        .select('*')
+        .eq('device_id', deviceId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        toast.error(error.message);
+      }
+      setPushTokenInfo(data || null);
+      setLoadingPushToken(false);
+    };
+
+    loadConfig();
+    loadPushToken();
   }, [deviceId]);
+
+  const renderPushTokenStatus = () => {
+    if (loadingPushToken) {
+      return (
+        <div className="alert alert-info" role="alert">
+          Loading push token status...
+        </div>
+      );
+    }
+
+    if (!pushTokenInfo) {
+      return (
+        <div className="alert alert-warning" role="alert">
+          <FontAwesomeIcon icon={faThumbsDown} className="me-2" />
+          <strong>Token not registered</strong>
+          <div className="small mt-1">Device has no push token</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="alert alert-info" role="alert">
+        <FontAwesomeIcon icon={faThumbsUp} className="me-2" />
+        <strong>Active token</strong>
+        <div className="small">
+          Last push:{' '}
+          {pushTokenInfo.last_pushed_at
+            ? moment(pushTokenInfo.last_pushed_at).format('DD/MM/YYYY HH:mm')
+            : 'No information'}
+        </div>
+      </div>
+    );
+  };
 
   const handleSendPush = async () => {
     setIsSendingPush(true);
     try {
-      const res = await fetch(
+      const response = await fetch(
         `${import.meta.env.VITE_URL}/.netlify/functions/sendPushToDevice`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             device_id: deviceId,
-            title: '¡Actualización de configuración!',
-            body: 'Hay una nueva configuración disponible para tu dispositivo.',
+            title: 'Update available!',
+            body: 'New configuration available',
           }),
         }
       );
-      const result = await res.json();
-      if (result.success || result.message_id) {
-        toast.success('Push enviado correctamente');
-      } else {
-        toast.error('Error enviando push: ' + JSON.stringify(result));
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send push');
       }
-    } catch (e) {
-      toast.error('Error enviando push: ' + e.message);
+
+      toast.success('Push sent successfully');
+
+      // Update local state if needed
+      if (pushTokenInfo) {
+        setPushTokenInfo((prev) => ({
+          ...prev,
+          last_pushed_at: new Date().toISOString(),
+          last_push_status: 'success',
+        }));
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Push error:', error);
+      toast.error(error.message || 'Failed to send push');
+      throw error;
     } finally {
       setIsSendingPush(false);
     }
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
-    setSubmitting(true);
-    const { error } = await supabase.from('device_configurations').upsert(
-      [
-        {
-          device_id: deviceId,
-          configuration: values,
-          updated_at: new Date().toISOString(),
-        },
-      ],
-      { onConflict: 'device_id' }
-    );
-    if (error) {
+    try {
+      const { error } = await supabase.from('device_configurations').upsert(
+        [
+          {
+            device_id: deviceId,
+            configuration: values,
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        { onConflict: 'device_id' }
+      );
+
+      if (error) throw error;
+      toast.success('Configuration saved');
+    } catch (error) {
       toast.error(error.message);
-    } else {
-      toast.success('Configuración guardada');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
-    <Fragment>
-      <div className="row">
-        <div className="col-lg-12">
-          <div className="card">
-            <div
-              className="card-header d-flex justify-content-between align-items-center"
-              style={{
-                cursor: 'pointer',
-                background: collapsed ? '#ffffff' : '#e8ecef',
-                transition: 'background 0.2s',
-                userSelect: 'none',
-              }}
-              onClick={() => setCollapsed((prev) => !prev)}
-            >
-              <h4 className="card-title">Device Configuration</h4>
-              <button
-                className="btn btn-outline-primary btn-sm ms-2"
-                onClick={handleSendPush}
-                disabled={isSendingPush}
-              >
-                {isSendingPush ? (
-                  <span className="spinner-border spinner-border-sm me-2"></span>
-                ) : (
-                  <i className="fa fa-bell me-2"></i>
-                )}
-                Enviar Push
-              </button>
-            </div>
-            <div
-              className={`card-body collapse ${collapsed ? '' : 'show'}`}
-              style={{
-                display: collapsed ? 'none' : 'block',
-                transition: 'all 0.3s',
-              }}
-            >
-              {loading ? (
-                <div>Cargando configuración...</div>
-              ) : (
-                <div className="form-validation">
-                  <Formik
-                    initialValues={initialConfig}
-                    enableReinitialize
-                    validationSchema={configSchema}
-                    onSubmit={handleSubmit}
-                  >
-                    {({ isSubmitting }) => (
-                      <Form>
-                        <div className="row">
-                          {configFields.map((field, idx) => (
-                            <div className="col-lg-6 mb-2" key={field.key}>
-                              <div className="form-group mb-3">
-                                <label className="text-label">
-                                  {field.label}
-                                </label>
-                                {field.type === 'select' ? (
-                                  <Field
-                                    as="select"
-                                    name={field.key}
-                                    className="form-control"
-                                  >
-                                    {field.options.map((opt) => (
-                                      <option key={opt} value={opt}>
-                                        {opt}
-                                      </option>
-                                    ))}
-                                  </Field>
-                                ) : (
-                                  <Field
-                                    type={field.type}
-                                    name={field.key}
-                                    className="form-control"
-                                    placeholder={field.label}
-                                  />
-                                )}
-                                <ErrorMessage
-                                  name={field.key}
-                                  component="div"
-                                  className="text-danger"
-                                />
-                              </div>
-                            </div>
-                          ))}
-                          <div className="col-lg-12">
-                            <button
-                              type="submit"
-                              className="btn btn-primary"
-                              disabled={isSubmitting}
-                            >
-                              {isSubmitting
-                                ? 'Saving...'
-                                : 'Save Configuration'}
-                            </button>
-                          </div>
-                        </div>
-                      </Form>
-                    )}
-                  </Formik>
-                </div>
-              )}
-            </div>
+    <div className="card">
+      <div
+        className="card-header d-flex justify-content-between align-items-center"
+        style={{
+          cursor: 'pointer',
+          background: collapsed ? '#fff' : '#e8ecef',
+          transition: 'background 0.2s',
+        }}
+        onClick={() => setCollapsed((prev) => !prev)}
+      >
+        <div className="row w-100 align-items-center gx-0">
+          <div className="col-12 col-md-10">
+            <h4 className="card-title mb-0">Device Configuration</h4>
+          </div>
+          <div className="col-12 col-md-2 text-xl-center mt-2">
+            {renderPushTokenStatus()}
           </div>
         </div>
       </div>
-    </Fragment>
+
+      <div className={`card-body collapse ${collapsed ? '' : 'show'}`}>
+        {loading ? (
+          <div>Loading configuration...</div>
+        ) : (
+          <Formik
+            initialValues={initialConfig}
+            enableReinitialize
+            validationSchema={configSchema}
+            onSubmit={handleSubmit}
+          >
+            {({ isSubmitting, resetForm }) => (
+              <Form>
+                <div className="row">
+                  {configFields.map((field) => (
+                    <div className="col-lg-6 mb-2" key={field.key}>
+                      <div className="form-group mb-3">
+                        <label className="text-label">{field.label}</label>
+                        {field.type === 'select' ? (
+                          <Field
+                            as="select"
+                            name={field.key}
+                            className="form-control"
+                            disabled={!isEditing}
+                          >
+                            {field.options.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </Field>
+                        ) : (
+                          <Field
+                            type={field.type}
+                            name={field.key}
+                            className="form-control"
+                            disabled={!isEditing}
+                          />
+                        )}
+                        <ErrorMessage
+                          name={field.key}
+                          component="div"
+                          className="text-danger"
+                        />
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="col-lg-12">
+                    {!isEditing ? (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-primary"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        Edit Configuration
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          type="submit"
+                          className="btn btn-sm btn-primary"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-danger ms-2"
+                          onClick={() => {
+                            setIsEditing(false);
+                            resetForm();
+                          }}
+                          disabled={isSubmitting}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    )}
+
+                    <button
+                      className="btn btn-sm btn-outline-primary ms-2"
+                      onClick={handleSendPush}
+                      disabled={isSendingPush}
+                      type="button"
+                    >
+                      {isSendingPush ? (
+                        <span className="spinner-border spinner-border-sm me-2" />
+                      ) : (
+                        <i className="fa fa-bell me-2" />
+                      )}
+                      Send Push
+                    </button>
+                  </div>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        )}
+      </div>
+    </div>
   );
 };
 
