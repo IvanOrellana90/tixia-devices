@@ -14,6 +14,8 @@ import {
   faIdBadge,
   faSimCard,
   faWindowRestore,
+  faUser,
+  faMobileRetro,
 } from '@fortawesome/free-solid-svg-icons';
 import ActivityDetail from './ActivityDetail';
 import DeviceConfigurationForm from './DeviceConfigurationForm';
@@ -253,64 +255,99 @@ const DeviceDetail = () => {
                 {/* Device Info */}
                 <div className="col-md-9">
                   <div className="clearfix pe-md-5">
-                    <h3 className="display-6 mb-2">
-                      <strong>{device?.location}</strong>
-                    </h3>
+                    <div className="d-flex align-items-center mb-3">
+                      <h3 className="display-6 mb-0 me-3">
+                        <strong>{device?.location}</strong>
+                      </h3>
+
+                      {/* SIM Card Icon with circle */}
+                      <div
+                        className={`d-flex align-items-center justify-content-center rounded-circle me-2 ${device?.mobile?.has_sim_card ? 'bg-info-subtle text-info-emphasis' : 'bg-warning-subtle text-warning-emphasis'}`}
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <FontAwesomeIcon icon={faSimCard} />
+                      </div>
+
+                      {/* Rented Icon with circle */}
+                      <div
+                        className={`d-flex align-items-center justify-content-center rounded-circle ${device?.mobile?.is_rented ? 'bg-info-subtle text-info-emphasis' : 'bg-warning-subtle text-warning-emphasis'}`}
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <FontAwesomeIcon icon={faMobileRetro} />
+                      </div>
+                    </div>
                     <ul className="d-flex flex-column fs-6">
                       {/* Unique ID */}
                       <li className="mb-1 d-flex align-items-center">
-                        <FontAwesomeIcon
-                          icon={faIdBadge}
-                          className="me-2 fs-18 text-primary"
-                        />
-                        <span className="fw-bold me-2">Unique ID:</span>
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faIdBadge}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Unique ID:</span>
                         {device?.mobile?.unique_id || (
                           <span className="text-muted">No assigned</span>
                         )}
                       </li>
                       {/* Ubicación jerárquica */}
                       <li className="mb-1 d-flex align-items-center">
-                        <FontAwesomeIcon
-                          icon={faMapPin}
-                          className="me-2 fs-18 text-primary"
-                        />
-                        <span className="fw-bold me-2">Location:</span>
-                        <span>
-                          {[
-                            device?.client?.name,
-                            device?.site?.name,
-                            device?.facility?.name,
-                          ]
-                            .filter(Boolean)
-                            .join(' - ')
-                            .replace(/ - ([^-]+)$/, ' | $1')}
-                        </span>
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faUser}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Client:</span>
+                        {device?.client?.name}
                       </li>
-                      {/* SIM Card */}
                       <li className="mb-1 d-flex align-items-center">
-                        <FontAwesomeIcon
-                          icon={faSimCard}
-                          className={`me-2 fs-18 ${device?.mobile?.has_sim_card ? 'text-info' : 'text-secondary'}`}
-                        />
-                        <span className="fw-bold me-2">SIM Card:</span>
-                        {device?.mobile?.has_sim_card ? 'Yes' : 'No'}
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faMapPin}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Site:</span>
+                        {device?.site?.name}
                       </li>
-                      {/* Rented */}
-                      <li className="mb-1 d-flex align-items-center">
-                        <FontAwesomeIcon
-                          icon={faWindowRestore}
-                          className={`me-2 fs-18 ${device?.mobile?.is_rented ? 'text-info' : 'text-secondary'}`}
-                        />
-                        <span className="fw-bold me-2">Rented:</span>
-                        {device?.mobile?.is_rented ? 'Yes' : 'No'}
-                      </li>
+                      {/* Facility */}
+                      {device?.facility?.name && (
+                        <li className="mb-1 d-flex align-items-center">
+                          <div
+                            className="d-flex align-items-center"
+                            style={{ width: '24px' }}
+                          >
+                            <FontAwesomeIcon
+                              icon={faMapPin}
+                              className="me-2 fs-18 text-primary"
+                            />
+                          </div>
+                          <span className="fw-light me-2">Facility:</span>
+                          {device?.facility?.name}
+                        </li>
+                      )}
                       {/* Modelo de móvil */}
                       <li className="mb-1 d-flex align-items-center">
-                        <FontAwesomeIcon
-                          icon={faMobileScreenButton}
-                          className="me-2 fs-18 text-primary"
-                        />
-                        <span className="fw-bold me-2">Model:</span>
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faMobileScreenButton}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Model:</span>
                         {device?.mobile?.model || (
                           <span className="text-muted">Not assigned</span>
                         )}
