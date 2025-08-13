@@ -31,19 +31,23 @@ const MobileList = () => {
     const fetchMobiles = async () => {
       const { data, error } = await supabase
         .from('mobiles')
-        .select('*, devices(location, id)');
-      if (error) {
-        console.error('Error fetching mobiles:', error);
-      } else {
-        const dataWithDeviceLocation = data.map((row) => ({
+        .select(
+          'id, imei, model, has_sim_card, is_rented, unique_id, active, devices(id, location)'
+        );
+      if (error) throw error;
+      const mobilesNormalized = data.map((row) => {
+        const devicesValue = row.devices;
+        const device = Array.isArray(devicesValue)
+          ? devicesValue[0]
+          : devicesValue;
+        return {
           ...row,
-          device_location:
-            row.devices && row.devices.length > 0
-              ? row.devices[0].location
-              : '',
-        }));
-        setMobiles(dataWithDeviceLocation);
-      }
+          device_id: device?.id ?? null,
+          device_location: device?.location ?? '',
+        };
+      });
+
+      setMobiles(mobilesNormalized);
     };
 
     fetchMobiles();
@@ -64,14 +68,16 @@ const MobileList = () => {
       Header: 'Device',
       accessor: 'device_location',
       Filter: ColumnFilter,
-      Cell: ({ value, row }) => (
-        <a
-          href={`/device/${row.original.devices[0].id}`}
-          className="text-primary"
-        >
-          {value}
-        </a>
-      ),
+      Cell: ({ value, row }) => {
+        const id = row.original.device_id;
+        return id ? (
+          <a href={`/device/${id}`} className="text-primary">
+            {value || '(sin ubicación)'}
+          </a>
+        ) : (
+          <span className="text-muted">—</span>
+        );
+      },
     },
     {
       Header: 'Unique ID',
