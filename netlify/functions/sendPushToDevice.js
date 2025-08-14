@@ -79,10 +79,6 @@ exports.handler = async (event) => {
     // Send push notification
     const message = {
       token: token.push_token,
-      notification: {
-        title: title || 'Configuration update',
-        body: body || 'New configuration available',
-      },
       data: { action: 'updateConfig' },
       android: { priority: 'high' },
       apns: { headers: { 'apns-priority': '10' } },
