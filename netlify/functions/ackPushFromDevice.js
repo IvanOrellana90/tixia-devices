@@ -1,50 +1,72 @@
-// netlify/functions/ackPushFromDevice.js
 const { createClient } = require('@supabase/supabase-js');
+
+// Crear cliente Supabase con clave de servicio
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY,
   { auth: { persistSession: false } }
 );
 
+// Helper para respuesta JSON
+const json = (statusCode, body) => ({
+  statusCode,
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
+});
+
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST')
-    return { statusCode: 405, body: 'Método no permitido' };
+  if (event.httpMethod !== 'POST') {
+    return json(405, { error: 'Método no permitido' });
+  }
 
   try {
-    const { unique_id, device_id, status } = JSON.parse(event.body || '{}');
-    if (!unique_id && !device_id)
-      return { statusCode: 400, body: 'unique_id o device_id requerido' };
+    const { unique_id, status = 'received' } = JSON.parse(event.body || '{}');
 
-    // resolver device_id
-    let devId = device_id;
-    if (!devId) {
-      const { data: mobile } = await supabase
-        .from('mobiles')
-        .select('id')
-        .eq('unique_id', unique_id)
-        .single();
-      if (!mobile) return { statusCode: 404, body: 'Mobile no encontrado' };
-      const { data: device } = await supabase
-        .from('devices')
-        .select('id')
-        .eq('mobile_id', mobile.id)
-        .single();
-      if (!device) return { statusCode: 404, body: 'Device no encontrado' };
-      devId = device.id;
+    if (!unique_id) {
+      return json(400, { error: 'unique_id es requerido' });
     }
 
-    // marcar ACK
-    const { error } = await supabase
+    // Resolver mobile -> device_id
+    const { data: mobile, error: mErr } = await supabase
+      .from('mobiles')
+      .select('id')
+      .eq('unique_id', unique_id)
+      .single();
+
+    if (mErr || !mobile) {
+      return json(404, { error: 'Mobile no encontrado' });
+    }
+
+    const { data: device, error: dErr } = await supabase
+      .from('devices')
+      .select('id')
+      .eq('mobile_id', mobile.id)
+      .single();
+
+    if (dErr || !device) {
+      return json(404, { error: 'Device no encontrado' });
+    }
+
+    const deviceId = device.id;
+
+    // Actualizar token con ACK
+    const { error: updateErr } = await supabase
       .from('device_push_tokens')
       .update({
         last_pushed_updated_at: new Date().toISOString(),
-        last_push_status: status || 'received',
+        last_push_status: status,
       })
-      .eq('device_id', devId);
+      .eq('device_id', deviceId);
 
-    if (error) return { statusCode: 500, body: JSON.stringify(error) };
-    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+    if (updateErr) {
+      return json(500, {
+        error: 'Error al actualizar ACK',
+        details: updateErr.message,
+      });
+    }
+
+    return json(200, { ok: true, device_id: deviceId, status });
   } catch (err) {
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return json(500, { error: 'Error inesperado', details: err.message });
   }
 };
