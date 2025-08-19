@@ -32,7 +32,7 @@ const MobileList = () => {
       const { data, error } = await supabase
         .from('mobiles')
         .select(
-          'id, imei, model, has_sim_card, is_rented, unique_id, active, devices(id, location)'
+          'id, imei, model, has_sim_card, is_rented, active, devices(id, location, unique_id)'
         );
       if (error) throw error;
       const mobilesNormalized = data.map((row) => {
@@ -44,6 +44,7 @@ const MobileList = () => {
           ...row,
           device_id: device?.id ?? null,
           device_location: device?.location ?? '',
+          unique_id: device?.unique_id ?? '',
         };
       });
 
