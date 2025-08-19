@@ -1,15 +1,11 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const mobileSchema = Yup.object().shape({
-  unique_id: Yup.string()
-    .min(3, 'Unique ID must be at least 3 characters')
-    .max(50, 'Unique ID cannot exceed 50 characters')
-    .required('Unique ID is required'),
   active: Yup.boolean(),
   is_rented: Yup.boolean(),
   has_sim_card: Yup.boolean(),
@@ -27,12 +23,8 @@ const EditMobile = () => {
         .select('*')
         .eq('id', id)
         .single();
-
-      if (error) {
-        toast.error(`Error fetching mobile: ${error.message}`);
-      } else {
-        setMobile(data);
-      }
+      if (error) toast.error(`Error fetching mobile: ${error.message}`);
+      else setMobile(data);
     };
     fetchMobile();
   }, [id]);
@@ -50,7 +42,6 @@ const EditMobile = () => {
             <div className="card-body">
               <Formik
                 initialValues={{
-                  unique_id: mobile.unique_id || '',
                   active: !!mobile.active,
                   is_rented: !!mobile.is_rented,
                   has_sim_card: !!mobile.has_sim_card,
@@ -61,22 +52,17 @@ const EditMobile = () => {
                     const { error } = await supabase
                       .from('mobiles')
                       .update({
-                        unique_id: values.unique_id.trim(),
                         active: values.active,
                         is_rented: values.is_rented,
                         has_sim_card: values.has_sim_card,
-                        updated_at: new Date(),
+                        updated_at: new Date().toISOString(),
                       })
                       .eq('id', id);
-
-                    if (error) {
-                      throw error;
-                    }
-
+                    if (error) throw error;
                     toast.success('Mobile updated successfully!');
                     navigate('/mobiles');
-                  } catch (error) {
-                    toast.error(`Error updating mobile: ${error.message}`);
+                  } catch (e) {
+                    toast.error(`Error updating mobile: ${e.message}`);
                   } finally {
                     setSubmitting(false);
                   }
@@ -86,26 +72,34 @@ const EditMobile = () => {
                 {({ isSubmitting, values, setFieldValue }) => (
                   <Form>
                     <div className="row">
-                      {/* Unique ID */}
+                      {/* IMEI (read-only) */}
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
-                          <label className="text-label">
-                            Unique ID <span className="required">*</span>
-                          </label>
-                          <Field
+                          <label className="text-label">IMEI</label>
+                          <input
                             type="text"
-                            name="unique_id"
                             className="form-control"
-                            placeholder="Mobile Unique ID"
-                          />
-                          <ErrorMessage
-                            name="unique_id"
-                            component="div"
-                            className="text-danger"
+                            value={mobile.imei || ''}
+                            readOnly
+                            disabled
                           />
                         </div>
                       </div>
-                      {/* State (active) */}
+                      {/* Model (read-only) */}
+                      <div className="col-lg-6 mb-2">
+                        <div className="form-group mb-3">
+                          <label className="text-label">Model</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            value={mobile.model || ''}
+                            readOnly
+                            disabled
+                          />
+                        </div>
+                      </div>
+
+                      {/* State */}
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">State</label>
@@ -123,35 +117,8 @@ const EditMobile = () => {
                           </Field>
                         </div>
                       </div>
-                      {/* IMEI */}
-                      <div className="col-lg-6 mb-2">
-                        <div className="form-group mb-3">
-                          <label className="text-label">IMEI</label>
-                          <Field
-                            type="text"
-                            name="imei"
-                            className="form-control"
-                            value={mobile.imei || ''}
-                            readOnly
-                            disabled
-                          />
-                        </div>
-                      </div>
-                      {/* Model */}
-                      <div className="col-lg-6 mb-2">
-                        <div className="form-group mb-3">
-                          <label className="text-label">Model</label>
-                          <Field
-                            type="text"
-                            name="model"
-                            className="form-control"
-                            value={mobile.model || ''}
-                            readOnly
-                            disabled
-                          />
-                        </div>
-                      </div>
-                      {/* is_rented */}
+
+                      {/* Rented */}
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">Rented</label>
@@ -172,7 +139,8 @@ const EditMobile = () => {
                           </Field>
                         </div>
                       </div>
-                      {/* has_sim_card */}
+
+                      {/* SIM Card */}
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">SIM Card</label>
@@ -193,7 +161,7 @@ const EditMobile = () => {
                           </Field>
                         </div>
                       </div>
-                      {/* Botón */}
+
                       <div className="col-lg-12">
                         <button
                           type="submit"

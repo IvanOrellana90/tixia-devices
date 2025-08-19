@@ -1,59 +1,84 @@
+// netlify/functions/registerDevicePushToken.js
 const { createClient } = require('@supabase/supabase-js');
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_ANON_KEY
+  // usa SERVICE_ROLE en funciones serverless
+  process.env.SUPABASE_SERVICE_ROLE,
+  { auth: { persistSession: false } }
 );
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Metodo no permitido' };
+    return { statusCode: 405, body: 'Método no permitido' };
   }
 
-  const { unique_id, push_token } = JSON.parse(event.body);
+  try {
+    const { unique_id, push_token } = JSON.parse(event.body || '{}');
+    if (!unique_id || !push_token) {
+      return { statusCode: 400, body: 'unique_id y push_token son requeridos' };
+    }
 
-  if (!unique_id || !push_token) {
-    return { statusCode: 400, body: 'unique_id y push_token son requeridos' };
-  }
+    // 1) Resolver device por unique_id (en devices)
+    const { data: dev, error: dErr } = await supabase
+      .from('devices')
+      .select('id, updated_at, created_at')
+      .eq('unique_id', unique_id)
+      .order('updated_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
 
-  // 1. Buscar mobile_id
-  const { data: mobile, error: mobileError } = await supabase
-    .from('mobiles')
-    .select('id')
-    .eq('unique_id', unique_id)
-    .single();
+    if (dErr)
+      return {
+        statusCode: 500,
+        body: `Error buscando device: ${dErr.message}`,
+      };
+    if (!dev)
+      return {
+        statusCode: 404,
+        body: 'Device no encontrado para ese unique_id',
+      };
 
-  if (mobileError || !mobile) {
-    return { statusCode: 404, body: 'Mobile no encontrado' };
-  }
+    // 2) Evitar write si no cambió el token
+    const { data: existing, error: exErr } = await supabase
+      .from('device_push_tokens')
+      .select('id, push_token')
+      .eq('device_id', dev.id)
+      .maybeSingle();
 
-  // 2. Buscar device_id
-  const { data: device, error: deviceError } = await supabase
-    .from('devices')
-    .select('id')
-    .eq('mobile_id', mobile.id)
-    .single();
+    if (exErr)
+      return { statusCode: 500, body: `Error leyendo token: ${exErr.message}` };
+    if (existing && existing.push_token === push_token) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ ok: true, changed: false }),
+      };
+    }
 
-  if (deviceError || !device) {
-    return { statusCode: 404, body: 'Device no encontrado para ese móvil' };
-  }
-
-  // 3. Guardar el token usando el device_id (entero)
-  const { error: insertError } = await supabase
-    .from('device_push_tokens')
-    .upsert(
+    // 3) Upsert por device_id
+    const { error: upErr } = await supabase.from('device_push_tokens').upsert(
       [
         {
-          device_id: device.id,
+          device_id: dev.id,
           push_token,
           updated_at: new Date().toISOString(),
         },
       ],
-      { onConflict: ['device_id'] }
+      { onConflict: 'device_id' }
     );
 
-  if (insertError) {
-    return { statusCode: 500, body: JSON.stringify(insertError) };
-  }
+    if (upErr)
+      return {
+        statusCode: 500,
+        body: `Error guardando token: ${upErr.message}`,
+      };
 
-  return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ ok: true, changed: true }),
+    };
+  } catch (e) {
+    return { statusCode: 500, body: `Error inesperado: ${e.message}` };
+  }
 };

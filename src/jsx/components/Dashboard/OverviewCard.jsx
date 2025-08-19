@@ -47,6 +47,7 @@ function DashboardOverviewCard() {
         .select(
           `
             id,
+            unique_id,
             location,
             mode,
             updated_at,
@@ -54,7 +55,6 @@ function DashboardOverviewCard() {
             client:client_id (name),
             mobile:mobile_id (
               id,
-              unique_id,
               imei,
               model
             )
@@ -269,7 +269,7 @@ function DashboardOverviewCard() {
                       <small className="d-block text-muted">
                         ID:{' '}
                         <span className="fw-bold">
-                          {device.mobile?.unique_id}
+                          {device.unique_id} {/* ✅ directo desde device */}
                         </span>
                         {' | '}
                         Model: <span>{device.mobile?.model}</span>

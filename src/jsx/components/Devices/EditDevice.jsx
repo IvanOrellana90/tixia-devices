@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 const deviceSchema = Yup.object().shape({
-  mobile_id: Yup.string().required('Unique ID is required'),
+  mobile_id: Yup.string().required('Mobile (IMEI) is required'),
   client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string()
@@ -32,8 +32,9 @@ const EditDevice = () => {
     const fetchMobiles = async () => {
       const { data, error } = await supabase
         .from('mobiles')
-        .select('id, unique_id')
-        .order('unique_id', { ascending: true });
+        .select('id, imei, model')
+        .neq('imei', '')
+        .order('imei', { ascending: true });
       if (error) {
         toast.error(`Error fetching mobiles: ${error.message}`);
       } else {
@@ -202,7 +203,7 @@ const EditDevice = () => {
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
-                              Unique ID <span className="required">*</span>
+                              Mobile (IMEI) <span className="required">*</span>
                             </label>
                             <Field
                               as="select"
@@ -210,10 +211,11 @@ const EditDevice = () => {
                               className="form-control"
                               placeholder="Select Unique ID"
                             >
-                              <option value="">Select Unique ID</option>
-                              {mobiles.map((mobile) => (
-                                <option key={mobile.id} value={mobile.id}>
-                                  {mobile.unique_id}
+                              <option value="">Select IMEI</option>
+                              {mobiles.map((m) => (
+                                <option key={m.id} value={m.id}>
+                                  {m.imei}
+                                  {m.model ? ` — ${m.model}` : ''}
                                 </option>
                               ))}
                             </Field>

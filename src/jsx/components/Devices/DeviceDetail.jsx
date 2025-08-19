@@ -13,7 +13,6 @@ import {
   faPhoneSlash,
   faIdBadge,
   faSimCard,
-  faWindowRestore,
   faUser,
   faMobileRetro,
 } from '@fortawesome/free-solid-svg-icons';
@@ -22,6 +21,7 @@ import DeviceConfigurationForm from './DeviceConfigurationForm';
 import { toast } from 'react-toastify';
 import { fetchNagiosStatus } from '../../services/nagiosService';
 import ServiceCard from './ServiceCard';
+import IconBubble from './IconBubble';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -47,7 +47,7 @@ const DeviceDetail = () => {
         .select(
           `*,
           client:client_id (name),
-          mobile:mobile_id (model, imei, has_sim_card, is_rented, unique_id, active),
+          mobile:mobile_id (model, imei, has_sim_card, is_rented, active),
           site:site_id (name),
           facility:facility_id (name)
           `
@@ -260,21 +260,31 @@ const DeviceDetail = () => {
                         <strong>{device?.location}</strong>
                       </h3>
 
-                      {/* SIM Card Icon with circle */}
-                      <div
-                        className={`d-flex align-items-center justify-content-center rounded-circle me-2 ${device?.mobile?.has_sim_card ? 'bg-info-subtle text-info-emphasis' : 'bg-warning-subtle text-warning-emphasis'}`}
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <FontAwesomeIcon icon={faSimCard} />
-                      </div>
+                      <IconBubble
+                        active={!!device?.mobile?.has_sim_card}
+                        icon={faSimCard}
+                        title="SIM Card"
+                        onText="The mobile has an active SIM card."
+                        offText="The mobile does not have a SIM card."
+                        className={
+                          device?.mobile?.has_sim_card
+                            ? 'me-2 bg-info-subtle text-info-emphasis'
+                            : 'me-2 bg-warning-subtle text-warning-emphasis'
+                        }
+                      />
 
-                      {/* Rented Icon with circle */}
-                      <div
-                        className={`d-flex align-items-center justify-content-center rounded-circle ${device?.mobile?.is_rented ? 'bg-info-subtle text-info-emphasis' : 'bg-warning-subtle text-warning-emphasis'}`}
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <FontAwesomeIcon icon={faMobileRetro} />
-                      </div>
+                      <IconBubble
+                        active={!!device?.mobile?.is_rented}
+                        icon={faMobileRetro}
+                        title="Rented"
+                        onText="The device is rented."
+                        offText="The device is not rented."
+                        className={
+                          device?.mobile?.is_rented
+                            ? 'bg-info-subtle text-info-emphasis'
+                            : 'bg-warning-subtle text-warning-emphasis'
+                        }
+                      />
                     </div>
                     <ul className="d-flex flex-column fs-6">
                       {/* Unique ID */}
@@ -289,7 +299,7 @@ const DeviceDetail = () => {
                           />
                         </div>
                         <span className="fw-light me-2">Unique ID:</span>
-                        {device?.mobile?.unique_id || (
+                        {device?.unique_id || (
                           <span className="text-muted">No assigned</span>
                         )}
                       </li>
