@@ -150,7 +150,7 @@ const DeviceConfigurationForm = ({ deviceId }) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('device_configurations')
-        .select('configuration')
+        .select('configuration, updated_at')
         .eq('device_id', deviceId)
         .single();
 
@@ -167,7 +167,7 @@ const DeviceConfigurationForm = ({ deviceId }) => {
       setLoadingPushToken(true);
       const { data, error } = await supabase
         .from('device_push_tokens')
-        .select('*')
+        .select('push_token,last_pushed_at,last_push_status')
         .eq('device_id', deviceId)
         .single();
 
@@ -273,6 +273,7 @@ const DeviceConfigurationForm = ({ deviceId }) => {
 
       if (error) throw error;
       toast.success('Configuration saved');
+      setIsEditing(false);
     } catch (error) {
       toast.error(error.message);
     } finally {
