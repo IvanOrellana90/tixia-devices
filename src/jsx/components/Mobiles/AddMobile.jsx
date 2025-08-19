@@ -6,9 +6,6 @@ import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 
 const mobileSchema = Yup.object().shape({
-  unique_id: Yup.string()
-    .min(3, 'Unique ID must be at least 3 characters')
-    .max(50, 'Unique ID cannot exceed 50 characters'),
   imei: Yup.string()
     .min(5, 'IMEI must be at least 5 characters')
     .max(50, 'IMEI cannot exceed 50 characters')
@@ -27,7 +24,6 @@ const AddMobile = () => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const cleanedValues = {
-        unique_id: values.unique_id.trim(),
         imei: values.imei.trim(),
         model: values.model.trim(),
         has_sim_card: values.has_sim_card,
@@ -60,7 +56,6 @@ const AddMobile = () => {
             <div className="card-body">
               <Formik
                 initialValues={{
-                  unique_id: '',
                   imei: '',
                   model: '',
                   has_sim_card: false,
@@ -86,22 +81,6 @@ const AddMobile = () => {
                           />
                           <ErrorMessage
                             name="imei"
-                            component="div"
-                            className="text-danger"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-lg-6 mb-2">
-                        <div className="form-group mb-3">
-                          <label className="text-label">Unique ID</label>
-                          <Field
-                            type="text"
-                            name="unique_id"
-                            className="form-control"
-                            placeholder="Enter Unique ID"
-                          />
-                          <ErrorMessage
-                            name="unique_id"
                             component="div"
                             className="text-danger"
                           />
