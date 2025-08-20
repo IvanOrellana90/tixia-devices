@@ -3,8 +3,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  // usa SERVICE_ROLE en funciones serverless
-  process.env.SUPABASE_SERVICE_ROLE,
+  process.env.VITE_SUPABASE_ANON_KEY,
   { auth: { persistSession: false } }
 );
 
