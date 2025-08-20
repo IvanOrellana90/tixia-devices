@@ -14,6 +14,10 @@ const deviceSchema = Yup.object().shape({
   mode: Yup.string()
     .oneOf(['Tourniquet', 'Kiosk', 'PDA'])
     .required('Mode is required'),
+  unique_id: Yup.string()
+    .trim()
+    .max(128, 'Max 128 characters')
+    .required('Unique ID is required'),
 });
 
 const AddDevice = () => {
@@ -42,7 +46,11 @@ const AddDevice = () => {
   }, []);
 
   const fetchSites = async (clientId) => {
-    if (!clientId) return setSites([]), setFacilities([]);
+    if (!clientId) {
+      setSites([]);
+      setFacilities([]);
+      return;
+    }
     const { data, error } = await supabase
       .from('sites')
       .select('id, name, ksec_id, client_id')
@@ -86,7 +94,7 @@ const AddDevice = () => {
       }
 
       const deviceData = {
-        mobile_id: parseInt(values.mobile_id, 10),
+        mobile_id: values.mobile_id ? parseInt(values.mobile_id, 10) : null,
         client_id: parseInt(values.client_id, 10),
         site_id: selectedSite.id,
         site_ksec_id: values.site_ksec_id,
@@ -94,6 +102,7 @@ const AddDevice = () => {
         facility_ksec_id: selectedFacility?.ksec_id || null,
         location: values.location.trim(),
         mode: values.mode,
+        unique_id: values.unique_id?.trim() || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -129,6 +138,7 @@ const AddDevice = () => {
                   facility_ksec_id: '',
                   location: '',
                   mode: '',
+                  unique_id: '',
                 }}
                 validationSchema={deviceSchema}
                 onSubmit={handleSubmit}
@@ -293,6 +303,30 @@ const AddDevice = () => {
                           </Field>
                           <ErrorMessage
                             name="mode"
+                            component="div"
+                            className="text-danger"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Unique ID (nuevo) */}
+                      <div className="col-lg-6 mb-2">
+                        <div className="form-group mb-3">
+                          <label className="text-label">
+                            Unique ID (Android ID / Device ID)
+                          </label>
+                          <Field
+                            type="text"
+                            name="unique_id"
+                            className="form-control"
+                            placeholder="e.g. a1b2c3d4e5f6g7h8"
+                          />
+                          <small className="text-muted">
+                            Opcional. Solo letras, números, -, _, . y : (máx.
+                            128).
+                          </small>
+                          <ErrorMessage
+                            name="unique_id"
                             component="div"
                             className="text-danger"
                           />
