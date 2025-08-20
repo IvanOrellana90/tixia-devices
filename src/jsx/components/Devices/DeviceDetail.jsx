@@ -15,6 +15,7 @@ import {
   faSimCard,
   faUser,
   faMobileRetro,
+  faGear,
 } from '@fortawesome/free-solid-svg-icons';
 import ActivityDetail from './ActivityDetail';
 import DeviceConfigurationForm from './DeviceConfigurationForm';
@@ -299,9 +300,20 @@ const DeviceDetail = () => {
                           />
                         </div>
                         <span className="fw-light me-2">Unique ID:</span>
-                        {device?.unique_id || (
-                          <span className="text-muted">No assigned</span>
-                        )}
+                        {device?.unique_id}
+                      </li>
+                      <li className="mb-1 d-flex align-items-center">
+                        <div
+                          className="d-flex align-items-center"
+                          style={{ width: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faGear}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Mode:</span>
+                        {device?.mode}
                       </li>
                       {/* Ubicación jerárquica */}
                       <li className="mb-1 d-flex align-items-center">
