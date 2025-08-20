@@ -17,6 +17,10 @@ const deviceSchema = Yup.object().shape({
   mode: Yup.string()
     .oneOf(['Tourniquet', 'Kiosk', 'PDA'], 'Invalid mode selected')
     .required('Mode is required'),
+  unique_id: Yup.string()
+    .trim()
+    .max(128, 'Max 128 characters')
+    .required('Unique ID is required'),
 });
 
 const EditDevice = () => {
@@ -35,13 +39,9 @@ const EditDevice = () => {
         .select('id, imei, model')
         .neq('imei', '')
         .order('imei', { ascending: true });
-      if (error) {
-        toast.error(`Error fetching mobiles: ${error.message}`);
-      } else {
-        setMobiles(data);
-      }
+      if (error) toast.error(`Error fetching mobiles: ${error.message}`);
+      else setMobiles(data || []);
     };
-
     fetchMobiles();
   }, []);
 
@@ -57,7 +57,6 @@ const EditDevice = () => {
         toast.error(`Error fetching device: ${error.message}`);
       } else {
         setDevice(data);
-        // Cargar sitios y facilities correspondientes al dispositivo
         if (data.client_id) {
           await fetchSites(data.client_id);
           if (data.site_ksec_id) {
@@ -67,14 +66,11 @@ const EditDevice = () => {
               .eq('ksec_id', data.site_ksec_id)
               .eq('client_id', data.client_id)
               .single();
-            if (site.data) {
-              await fetchFacilities(site.data.id);
-            }
+            if (site.data) await fetchFacilities(site.data.id);
           }
         }
       }
     };
-
     fetchDevice();
   }, [id]);
 
@@ -83,14 +79,9 @@ const EditDevice = () => {
       const { data, error } = await supabase
         .from('clients')
         .select('id, name, url');
-
-      if (error) {
-        toast.error(`Error fetching clients: ${error.message}`);
-      } else {
-        setClients(data);
-      }
+      if (error) toast.error(`Error fetching clients: ${error.message}`);
+      else setClients(data || []);
     };
-
     fetchClients();
   }, []);
 
@@ -99,12 +90,8 @@ const EditDevice = () => {
       .from('sites')
       .select('id, name, ksec_id, client_id')
       .eq('client_id', clientId);
-
-    if (error) {
-      toast.error(`Error fetching sites: ${error.message}`);
-    } else {
-      setSites(data);
-    }
+    if (error) toast.error(`Error fetching sites: ${error.message}`);
+    else setSites(data || []);
   };
 
   const fetchFacilities = async (siteId) => {
@@ -112,26 +99,17 @@ const EditDevice = () => {
       .from('facilities')
       .select('id, name, ksec_id, site_id')
       .eq('site_id', siteId);
-
-    if (error) {
-      toast.error(`Error fetching facilities: ${error.message}`);
-    } else {
-      setFacilities(data);
-    }
+    if (error) toast.error(`Error fetching facilities: ${error.message}`);
+    else setFacilities(data || []);
   };
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      // Encontrar el sitio seleccionado
       const selectedSite = sites.find(
         (site) => site.ksec_id === parseInt(values.site_ksec_id, 10)
       );
+      if (!selectedSite) throw new Error('Selected site not found');
 
-      if (!selectedSite) {
-        throw new Error('Selected site not found');
-      }
-
-      // Encontrar el facility seleccionado (si existe)
       let selectedFacility = null;
       if (values.facility_ksec_id) {
         selectedFacility = facilities.find(
@@ -141,7 +119,7 @@ const EditDevice = () => {
       }
 
       const cleanedValues = {
-        mobile_id: values.mobile_id,
+        mobile_id: values.mobile_id || null,
         client_id: values.client_id,
         site_id: selectedSite.id,
         site_ksec_id: values.site_ksec_id,
@@ -149,6 +127,8 @@ const EditDevice = () => {
         facility_ksec_id: selectedFacility?.ksec_id || null,
         location: values.location.trim(),
         mode: values.mode,
+        unique_id: values.unique_id?.trim() || null, // ⬅️ NUEVO
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase
@@ -156,12 +136,10 @@ const EditDevice = () => {
         .update(cleanedValues)
         .eq('id', id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success('Device updated successfully!');
-      navigate('/devices'); // Redirigir después de actualizar
+      navigate('/devices');
     } catch (error) {
       console.error('Supabase Error:', error);
       toast.error(`Error updating device: ${error.message}`);
@@ -170,9 +148,7 @@ const EditDevice = () => {
     }
   };
 
-  if (!device) {
-    return <div>Loading...</div>;
-  }
+  if (!device) return <div>Loading...</div>;
 
   return (
     <Fragment>
@@ -192,6 +168,7 @@ const EditDevice = () => {
                     facility_ksec_id: device.facility_ksec_id || '',
                     location: device.location,
                     mode: device.mode,
+                    unique_id: device.unique_id || '', // ⬅️ NUEVO
                   }}
                   validationSchema={deviceSchema}
                   onSubmit={handleSubmit}
@@ -200,6 +177,7 @@ const EditDevice = () => {
                   {({ isSubmitting, values, setFieldValue }) => (
                     <Form>
                       <div className="row">
+                        {/* Mobile IMEI */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
@@ -209,7 +187,6 @@ const EditDevice = () => {
                               as="select"
                               name="mobile_id"
                               className="form-control"
-                              placeholder="Select Unique ID"
                             >
                               <option value="">Select IMEI</option>
                               {mobiles.map((m) => (
@@ -227,6 +204,7 @@ const EditDevice = () => {
                           </div>
                         </div>
 
+                        {/* Client */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
@@ -242,16 +220,12 @@ const EditDevice = () => {
                                 setFieldValue('site_ksec_id', '');
                                 setFieldValue('facility_ksec_id', '');
                                 await fetchSites(clientId);
-                                setFacilities([]); // limpiar facilities
+                                setFacilities([]);
                               }}
                             >
                               <option value="">Select a Client</option>
                               {clients.map((client) => (
-                                <option
-                                  key={client.id}
-                                  value={client.id}
-                                  data-id={client.id}
-                                >
+                                <option key={client.id} value={client.id}>
                                   {client.name}
                                 </option>
                               ))}
@@ -264,6 +238,7 @@ const EditDevice = () => {
                           </div>
                         </div>
 
+                        {/* Site */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
@@ -278,25 +253,18 @@ const EditDevice = () => {
                                 const ksecId = e.target.value;
                                 setFieldValue('site_ksec_id', ksecId);
                                 setFieldValue('facility_ksec_id', '');
-                                // Buscar el site por ksec_id y obtener el id real
                                 const selectedSite = sites.find(
                                   (site) =>
                                     String(site.ksec_id) === String(ksecId)
                                 );
-                                if (selectedSite) {
+                                if (selectedSite)
                                   await fetchFacilities(selectedSite.id);
-                                } else {
-                                  setFacilities([]);
-                                }
+                                else setFacilities([]);
                               }}
                             >
                               <option value="">Select a Site</option>
                               {sites.map((site) => (
-                                <option
-                                  key={site.id}
-                                  value={site.ksec_id}
-                                  data-id={site.id}
-                                >
+                                <option key={site.id} value={site.ksec_id}>
                                   {site.name}
                                 </option>
                               ))}
@@ -309,16 +277,17 @@ const EditDevice = () => {
                           </div>
                         </div>
 
+                        {/* Facility */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
-                              Facility KSEC ID{' '}
+                              Facility KSEC ID
                             </label>
                             <Field
                               as="select"
                               name="facility_ksec_id"
                               className="form-control"
-                              disabled={!values.site_ksec_id} // Deshabilitar si no hay site_ksec_id
+                              disabled={!values.site_ksec_id}
                             >
                               <option value="">Select a Facility</option>
                               {facilities.map((facility) => (
@@ -338,6 +307,7 @@ const EditDevice = () => {
                           </div>
                         </div>
 
+                        {/* Location */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
@@ -357,6 +327,7 @@ const EditDevice = () => {
                           </div>
                         </div>
 
+                        {/* Mode */}
                         <div className="col-lg-6 mb-2">
                           <div className="form-group mb-3">
                             <label className="text-label">
@@ -374,6 +345,30 @@ const EditDevice = () => {
                             </Field>
                             <ErrorMessage
                               name="mode"
+                              component="div"
+                              className="text-danger"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Unique ID */}
+                        <div className="col-lg-6 mb-2">
+                          <div className="form-group mb-3">
+                            <label className="text-label">
+                              Unique ID (Android ID / Device ID)
+                            </label>
+                            <Field
+                              type="text"
+                              name="unique_id"
+                              className="form-control"
+                              placeholder="e.g. a1b2c3d4e5f6g7h8"
+                            />
+                            <small className="text-muted">
+                              Optional. Only letters, numbers, -, _, . and :
+                              (max 128).
+                            </small>
+                            <ErrorMessage
+                              name="unique_id"
                               component="div"
                               className="text-danger"
                             />
