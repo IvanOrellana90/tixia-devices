@@ -319,12 +319,8 @@ const AddDevice = () => {
                             type="text"
                             name="unique_id"
                             className="form-control"
-                            placeholder="e.g. a1b2c3d4e5f6g7h8"
+                            placeholder="a1b2c3d4e5f6g7h8"
                           />
-                          <small className="text-muted">
-                            Opcional. Solo letras, números, -, _, . y : (máx.
-                            128).
-                          </small>
                           <ErrorMessage
                             name="unique_id"
                             component="div"
