@@ -151,7 +151,7 @@ const AddDevice = () => {
                             {mobiles.map((m) => (
                               <option key={m.id} value={m.id}>
                                 {m.imei}
-                                {m.model ? ` — ${m.model}` : ''}
+                                {m.model ? ` [${m.model}]` : ''}
                               </option>
                             ))}
                           </Field>

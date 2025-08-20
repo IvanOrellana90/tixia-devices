@@ -216,6 +216,8 @@ const DeviceConfigurationForm = ({ deviceId }) => {
   };
 
   const handleSendPush = async () => {
+    if (isSendingPush) return;
+    
     setIsSendingPush(true);
     try {
       const response = await fetch(
