@@ -112,6 +112,6 @@ exports.handler = async (event) => {
     if (msg === 'SERVER_MISCONFIG') {
       return json(500, { error: 'Server misconfigured' });
     }
-    return json(500, { error: 'Internal error' });
+    return json(500, { error: 'Internal error', details: String(e) });
   }
 };
