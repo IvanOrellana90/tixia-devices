@@ -3,9 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
-import moment from 'moment';
+import DevicePushAlerts from './DevicePushAlerts';
 
 const configFields = [
   {
@@ -140,7 +138,6 @@ const DeviceConfigurationForm = ({ deviceId }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [isSendingPush, setIsSendingPush] = useState(false);
   const [pushTokenInfo, setPushTokenInfo] = useState(null);
-  const [loadingPushToken, setLoadingPushToken] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -163,61 +160,12 @@ const DeviceConfigurationForm = ({ deviceId }) => {
       setLoading(false);
     };
 
-    const loadPushToken = async () => {
-      setLoadingPushToken(true);
-      const { data, error } = await supabase
-        .from('device_push_tokens')
-        .select('push_token,last_pushed_at,last_push_status')
-        .eq('device_id', deviceId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        toast.error(error.message);
-      }
-      setPushTokenInfo(data || null);
-      setLoadingPushToken(false);
-    };
-
     loadConfig();
-    loadPushToken();
   }, [deviceId]);
-
-  const renderPushTokenStatus = () => {
-    if (loadingPushToken) {
-      return (
-        <div className="alert alert-info" role="alert">
-          Loading push token status...
-        </div>
-      );
-    }
-
-    if (!pushTokenInfo) {
-      return (
-        <div className="alert alert-warning" role="alert">
-          <FontAwesomeIcon icon={faThumbsDown} className="me-2" />
-          <strong>Token not registered</strong>
-          <div className="small mt-1">Device has no push token</div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="alert alert-info" role="alert">
-        <FontAwesomeIcon icon={faThumbsUp} className="me-2" />
-        <strong>Active token</strong>
-        <div className="small">
-          Last push:{' '}
-          {pushTokenInfo.last_pushed_at
-            ? moment(pushTokenInfo.last_pushed_at).format('DD/MM/YYYY HH:mm')
-            : 'No information'}
-        </div>
-      </div>
-    );
-  };
 
   const handleSendPush = async () => {
     if (isSendingPush) return;
-    
+
     setIsSendingPush(true);
     try {
       const response = await fetch(
@@ -241,7 +189,6 @@ const DeviceConfigurationForm = ({ deviceId }) => {
 
       toast.success('Push sent successfully');
 
-      // Update local state if needed
       if (pushTokenInfo) {
         setPushTokenInfo((prev) => ({
           ...prev,
@@ -295,11 +242,11 @@ const DeviceConfigurationForm = ({ deviceId }) => {
         onClick={() => setCollapsed((prev) => !prev)}
       >
         <div className="row w-100 align-items-center gx-0">
-          <div className="col-12 col-md-10">
+          <div className="col-12 col-md-4">
             <h4 className="card-title mb-0">Device Configuration</h4>
           </div>
-          <div className="col-12 col-md-2 text-xl-center mt-2">
-            {renderPushTokenStatus()}
+          <div className="col-12 col-md-8 text-xl-center mt-2">
+            <DevicePushAlerts device_id={deviceId} key={deviceId} />
           </div>
         </div>
       </div>
