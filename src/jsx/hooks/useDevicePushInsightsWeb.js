@@ -1,52 +1,36 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { fetchPushReceptionByDeviceId } from '../services/fetchPushReceptionByDeviceId';
-import { fetchPushStatusByDeviceId } from '../services/fetchPushStatusByDeviceId';
 
 export function useDevicePushInsightsWeb(
   device_id,
   { auto = true, intervalMs = 60_000 } = {}
 ) {
-  const [loadingPushToken, setLoadingPushToken] = useState(true);
-  const [pushTokenInfo, setPushTokenInfo] = useState(null);
-
-  const [loadingDelivery, setLoadingDelivery] = useState(true);
-  const [deliveryInfo, setDeliveryInfo] = useState(null);
-
+  const [loading, setLoading] = useState(true);
+  const [pushInfo, setPushInfo] = useState(null);
   const timerRef = useRef(null);
 
   const refresh = useCallback(async () => {
-    setLoadingPushToken(true);
-    setLoadingDelivery(true);
+    setLoading(true);
 
-    const [status, reception] = await Promise.all([
-      fetchPushStatusByDeviceId(device_id),
-      fetchPushReceptionByDeviceId(device_id),
-    ]);
+    const data = await fetchPushReceptionByDeviceId(device_id);
 
-    console.log('DEBUG pushTokenInfo status:', status);
-
-    if (status.ok && status.hasToken) {
-      setPushTokenInfo({
-        status: status.lastPushStatus || 'success',
-        last_pushed_at: status.lastPushedAt,
-        last_push_status: status.lastPushStatus,
-        checked_at: status.checkedAt,
+    if (data.ok) {
+      setPushInfo({
+        lastPushedAt: data.lastPushedAt,
+        lastPushUpdatedAt: data.lastPushUpdatedAt,
+        lastPushStatus: data.lastPushStatus,
+        lastPushError: data.lastPushError,
+        lastErrorMessage: data.lastErrorMessage,
+        lastReceivedAt: data.lastReceivedAt,
+        lastAppliedAt: data.lastAppliedAt,
+        lastAckReceivedAt: data.lastReceivedAt,
+        lastAckAppliedAt: data.lastAppliedAt,
       });
     } else {
-      setPushTokenInfo(null);
+      setPushInfo(null);
     }
-    setLoadingPushToken(false);
 
-    if (reception.ok) {
-      setDeliveryInfo({
-        lastSentAt: status.lastPushedAt,
-        lastPushStatus: status.lastPushStatus,
-        lastReceivedAt: reception.lastReceivedAt,
-      });
-    } else {
-      setDeliveryInfo(null);
-    }
-    setLoadingDelivery(false);
+    setLoading(false);
   }, [device_id]);
 
   useEffect(() => {
@@ -57,10 +41,8 @@ export function useDevicePushInsightsWeb(
   }, [refresh, intervalMs, auto]);
 
   return {
-    loadingPushToken,
-    pushTokenInfo,
-    loadingDelivery,
-    deliveryInfo,
+    loading,
+    pushInfo,
     refresh,
   };
 }
