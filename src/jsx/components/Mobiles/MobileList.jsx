@@ -59,11 +59,7 @@ const MobileList = () => {
       Header: 'IMEI',
       accessor: 'imei',
       Filter: ColumnFilter,
-      Cell: ({ row }) => (
-        <a href={`/mobile/${row.original.id}`} className="text-primary">
-          {row.original.imei}
-        </a>
-      ),
+      Cell: ({ row }) => row.original.imei,
     },
     {
       Header: 'Device',

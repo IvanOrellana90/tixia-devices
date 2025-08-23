@@ -7,14 +7,21 @@ export function useDevicePushInsightsWeb(
 ) {
   const [loading, setLoading] = useState(true);
   const [pushInfo, setPushInfo] = useState(null);
+  const [status, setStatus] = useState('idle');
   const timerRef = useRef(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-
     const data = await fetchPushReceptionByDeviceId(device_id);
 
-    if (data.ok) {
+    if (!data.ok) {
+      setStatus('error');
+      setPushInfo(null);
+    } else if (data.exists === false) {
+      setStatus('not_found');
+      setPushInfo(null);
+    } else {
+      setStatus('ok');
       setPushInfo({
         lastPushedAt: data.lastPushedAt,
         lastPushUpdatedAt: data.lastPushUpdatedAt,
@@ -23,11 +30,8 @@ export function useDevicePushInsightsWeb(
         lastErrorMessage: data.lastErrorMessage,
         lastReceivedAt: data.lastReceivedAt,
         lastAppliedAt: data.lastAppliedAt,
-        lastAckReceivedAt: data.lastReceivedAt,
-        lastAckAppliedAt: data.lastAppliedAt,
+        hasToken: data.hasToken,
       });
-    } else {
-      setPushInfo(null);
     }
 
     setLoading(false);
@@ -40,9 +44,5 @@ export function useDevicePushInsightsWeb(
     return () => clearInterval(timerRef.current);
   }, [refresh, intervalMs, auto]);
 
-  return {
-    loading,
-    pushInfo,
-    refresh,
-  };
+  return { loading, status, pushInfo, refresh };
 }

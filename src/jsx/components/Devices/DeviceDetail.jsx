@@ -291,8 +291,8 @@ const DeviceDetail = () => {
                       {/* Unique ID */}
                       <li className="mb-1 d-flex align-items-center">
                         <div
-                          className="d-flex align-items-center"
-                          style={{ width: '24px' }}
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
                             icon={faIdBadge}
@@ -304,8 +304,8 @@ const DeviceDetail = () => {
                       </li>
                       <li className="mb-1 d-flex align-items-center">
                         <div
-                          className="d-flex align-items-center"
-                          style={{ width: '24px' }}
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
                             icon={faGear}
@@ -318,8 +318,8 @@ const DeviceDetail = () => {
                       {/* Ubicación jerárquica */}
                       <li className="mb-1 d-flex align-items-center">
                         <div
-                          className="d-flex align-items-center"
-                          style={{ width: '24px' }}
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
                             icon={faUser}
@@ -331,8 +331,8 @@ const DeviceDetail = () => {
                       </li>
                       <li className="mb-1 d-flex align-items-center">
                         <div
-                          className="d-flex align-items-center"
-                          style={{ width: '24px' }}
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
                             icon={faMapPin}
@@ -346,8 +346,8 @@ const DeviceDetail = () => {
                       {device?.facility?.name && (
                         <li className="mb-1 d-flex align-items-center">
                           <div
-                            className="d-flex align-items-center"
-                            style={{ width: '24px' }}
+                            className="d-flex align-items-center justify-content-center me-2"
+                            style={{ width: '24px', height: '24px' }}
                           >
                             <FontAwesomeIcon
                               icon={faMapPin}
@@ -361,8 +361,8 @@ const DeviceDetail = () => {
                       {/* Modelo de móvil */}
                       <li className="mb-1 d-flex align-items-center">
                         <div
-                          className="d-flex align-items-center"
-                          style={{ width: '24px' }}
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
                             icon={faMobileScreenButton}

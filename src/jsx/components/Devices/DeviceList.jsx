@@ -60,7 +60,6 @@ const DeviceList = () => {
           client_name: device.clients?.name || '',
           facility_name: device.facility?.name || '',
           site_name: device.site?.name || '',
-          unique_id: device.mobile?.unique_id || '',
           model: device.mobile?.model || '',
           mobile: device.mobile || '',
           mobile_imei: device.mobile?.imei || '',
@@ -129,13 +128,16 @@ const DeviceList = () => {
       Cell: ({ row }) => {
         const mobile = row.original.mobile;
         return mobile ? (
-          <a href={`/mobile/${mobile.id}`} className="text-primary">
-            {mobile.imei}
-          </a>
+          mobile.imei
         ) : (
           <span className="text-muted">Sin IMEI</span>
         );
       },
+    },
+    {
+      Header: 'Unique ID',
+      accessor: 'unique_id',
+      Filter: ColumnFilter,
     },
     {
       Header: 'Client',
