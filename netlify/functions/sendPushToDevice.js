@@ -112,9 +112,11 @@ exports.handler = async (event) => {
       },
     };
 
-    console.log('Device ID:', deviceId);
-    console.log('Push token:', tok?.push_token);
-    console.log('Message payload:', JSON.stringify(msg, null, 2));
+    // obtener una diferencia de 10 segundos para validar que recibio el equipo
+
+    const now = new Date();
+    const tenSecondsAgo = new Date(now.getTime() - 10 * 1000);
+    const isoString = tenSecondsAgo.toISOString();
 
     const messageId = await admin.messaging(app).send(msg);
     console.log('FCM message ID:', messageId);
@@ -123,7 +125,7 @@ exports.handler = async (event) => {
     await supabase
       .from('device_push_tokens')
       .update({
-        last_pushed_at: new Date().toISOString(),
+        last_pushed_at: isoString,
         last_push_status: 'success',
       })
       .eq('device_id', deviceId);

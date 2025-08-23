@@ -5,23 +5,26 @@ import { faThumbsUp, faThumbsDown } from '@fortawesome/free-solid-svg-icons';
 import { useDevicePushInsightsWeb } from '../../hooks/useDevicePushInsightsWeb';
 
 export default function DevicePushAlerts({ device_id }) {
-  const { loading, pushInfo } = useDevicePushInsightsWeb(device_id, {
+  const { loading, status, pushInfo } = useDevicePushInsightsWeb(device_id, {
     auto: true,
     intervalMs: 60_000,
   });
-
   const pretty = (ts) =>
     ts ? moment(ts).format('DD/MM/YYYY HH:mm') : 'No information';
 
   return (
     <div className="row g-3 align-items-stretch">
-      {/* Alert #1: Push Token Status */}
+      {/* Alert #1: Token */}
       <div className="col-md-6">
         {loading ? (
           <div className="alert alert-info h-100 mb-0" role="alert">
             Loading push token status...
           </div>
-        ) : !pushInfo ? (
+        ) : status === 'error' ? (
+          <div className="alert alert-danger h-100 mb-0" role="alert">
+            <strong>Error</strong> consultando estado
+          </div>
+        ) : status === 'not_found' || !pushInfo?.hasToken ? (
           <div className="alert alert-warning h-100 mb-0" role="alert">
             <FontAwesomeIcon icon={faThumbsDown} className="me-2" />
             <strong>Token not registered</strong>
@@ -38,7 +41,7 @@ export default function DevicePushAlerts({ device_id }) {
         )}
       </div>
 
-      {/* Alert #2: Last Push (Send/Receive) */}
+      {/* Alert #2: Último Push */}
       <div className="col-md-6">
         {loading ? (
           <div className="alert alert-info h-100 mb-0" role="alert">
@@ -52,26 +55,16 @@ export default function DevicePushAlerts({ device_id }) {
             const received = pushInfo?.lastReceivedAt
               ? new Date(pushInfo.lastReceivedAt).getTime()
               : null;
-
-            let alertClass = 'alert-light border'; // gris por defecto
-
-            if (sent && received) {
-              if (received >= sent) {
-                alertClass = 'alert-success'; // verde: ACK ok
-              } else {
-                alertClass = 'alert-danger'; // rojo: ACK pendiente
-              }
-            }
-
+            let alertClass = 'alert-light border';
+            if (sent && received)
+              alertClass = received >= sent ? 'alert-success' : 'alert-warning';
             return (
               <div className={`alert ${alertClass} h-100 mb-0`} role="alert">
                 <div className="small fw-light">
-                  Sent at:{' '}
-                  <span className="">{pretty(pushInfo?.lastPushedAt)}</span>
+                  Sent at: {pretty(pushInfo?.lastPushedAt)}
                 </div>
                 <div className="small fw-light">
-                  Received at:{' '}
-                  <span className="">{pretty(pushInfo?.lastReceivedAt)}</span>
+                  Received at: {pretty(pushInfo?.lastReceivedAt)}
                 </div>
                 {pushInfo?.lastPushError && (
                   <div className="small text-danger mt-1">
