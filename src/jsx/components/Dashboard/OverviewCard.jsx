@@ -12,7 +12,7 @@ import { faPhoneFlip, faPhoneSlash } from '@fortawesome/free-solid-svg-icons';
 
 import DevicesChart from './Data/DevicesChart';
 import { fetchNagiosHostCount } from '../../services/nagiosService';
-import DevicesByModeChart from './Tabs/DevicesByModeChart';
+import OverviewTab from './Tabs/OverviewTab';
 
 const ProfilePages = [
   { pagename: 'Overview', pageurl: 'dashboard-overview' },
@@ -289,13 +289,12 @@ function DashboardOverviewCard() {
               </div>
             </div>
           </div>
-          {activeTab === 'dashboard-overview'}
-          <div className="row">
-            <div className="col-xl-6 col-lg-6 col-md-12">
-              <DevicesByModeChart devices={devices} />
-            </div>
+          <div className="mt-1">
+            {activeTab === 'dashboard-overview' && (
+              <OverviewTab devices={devices} clients={clients} />
+            )}
+            {activeTab === 'dashboard-activity'}
           </div>
-          {activeTab === 'dashboard-activity'}
         </div>
       </Fragment>
     </>
