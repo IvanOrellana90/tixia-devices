@@ -39,16 +39,22 @@ const DeviceList = () => {
         .from('devices')
         .select(
           `
-      *,
-      clients:client_id (name),
-      facility:facility_id (name),
-      site:site_id (name),
-      mobile:mobile_id (
-        id,
-        imei,
-        model
-      )
-    `
+            *,
+            clients:client_id (name),
+            facility:facility_id (name),
+            site:site_id (name),
+            mobile:mobile_id (
+              id,
+              imei,
+              model,
+              has_sim_card,
+              is_rented,
+              active
+            ),
+            device_configurations (
+              configuration
+            )
+          `
         )
         .order('activated_at', { ascending: false });
 
@@ -63,6 +69,8 @@ const DeviceList = () => {
           model: device.mobile?.model || '',
           mobile: device.mobile || '',
           mobile_imei: device.mobile?.imei || '',
+          mobile_active: device.mobile?.active || false,
+          configuration_json: device.device_configurations?.configuration || {},
         }));
         setDevices(devicesWithNames);
       }
@@ -242,25 +250,39 @@ const DeviceList = () => {
   const { globalFilter } = state;
 
   const exportToExcel = () => {
-    const fileName = 'devices_export'; // Nombre del archivo
+    const fileName = 'devices_export';
     const exportData = data.map((row) => ({
-      Name: row.name,
-      Model: row.model,
-      Client: row.client_name,
       Location: row.location,
+      Mode: row.mode,
+      Client: row.client_name,
       Site: row.site_name,
       Facility: row.facility_name,
-      Mode: row.mode,
+      Model: row.model,
       Version: row.version_name,
-      Active: row.active ? 'Active' : 'Inactive',
+      Active: row.mobile_active ? 'Active' : 'Inactive',
     }));
 
-    // Crear una hoja de cálculo
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Devices');
+    const configData = data.map((row) => {
+      const config =
+        typeof row.configuration_json === 'object' &&
+        row.configuration_json !== null
+          ? row.configuration_json
+          : {};
+      return {
+        Location: row.location,
+        UniqueId: row.unique_id,
+        ...config,
+      };
+    });
 
-    // Generar el archivo Excel
+    // Crear una hoja de cálculo
+    const workbook = XLSX.utils.book_new();
+    const worksheetDevices = XLSX.utils.json_to_sheet(exportData);
+    const worksheetConfigs = XLSX.utils.json_to_sheet(configData);
+
+    XLSX.utils.book_append_sheet(workbook, worksheetDevices, 'Devices');
+    XLSX.utils.book_append_sheet(workbook, worksheetConfigs, 'Configurations');
+
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
   };
 
