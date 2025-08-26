@@ -1,4 +1,5 @@
 import DevicesByModeChart from '../Data/DevicesByModeChart';
+import ClientDevicesTable from '../Data/ClientDevicesTable';
 
 const OverviewTab = ({ devices, clients }) => {
   if (!devices || devices.length === 0) {
@@ -12,20 +13,7 @@ const OverviewTab = ({ devices, clients }) => {
         <DevicesByModeChart devices={devices} />
       </div>
       <div className="col-md-12 col-xl-8">
-        {/* Aquí podrías mostrar más estadísticas filtradas por client si quieres */}
-        <div className="card">
-          <div className="card-header">
-            <h4 className="card-title">Summary</h4>
-          </div>
-          <div className="card-body">
-            <p>
-              Total devices: <strong>{devices.length}</strong>
-            </p>
-            <p>
-              Total clients: <strong>{clients?.length || 0}</strong>
-            </p>
-          </div>
-        </div>
+        <ClientDevicesTable clients={clients} devices={devices} />
       </div>
     </div>
   );

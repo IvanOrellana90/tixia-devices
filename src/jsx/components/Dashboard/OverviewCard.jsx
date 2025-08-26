@@ -53,6 +53,7 @@ function DashboardOverviewCard() {
             mode,
             updated_at,
             created_at,
+            client_id,
             client:client_id (name),
             mobile:mobile_id (
               id,
@@ -289,13 +290,11 @@ function DashboardOverviewCard() {
               </div>
             </div>
           </div>
-          <div className="mt-1">
-            {activeTab === 'dashboard-overview' && (
-              <OverviewTab devices={devices} clients={clients} />
-            )}
-            {activeTab === 'dashboard-activity'}
-          </div>
         </div>
+        {activeTab === 'dashboard-overview' && (
+          <OverviewTab devices={devices} clients={clients} />
+        )}
+        {activeTab === 'dashboard-activity'}
       </Fragment>
     </>
   );
