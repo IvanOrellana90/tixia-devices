@@ -258,11 +258,12 @@ const DeviceList = () => {
       Client: row.client_name,
       Site: row.site_name,
       Facility: row.facility_name,
+      IMEI: row.mobile_imei || '',
       Model: row.model,
       Version: row.version_name,
       HasSim: row.mobile?.has_sim || false,
       IsRented: row.mobile?.is_rented || false,
-      Active: row.mobile_active ? 'Active' : 'Inactive',
+      Status: row.mobile_active ? 'Active' : 'Inactive',
     }));
 
     const configData = data.map((row) => {
