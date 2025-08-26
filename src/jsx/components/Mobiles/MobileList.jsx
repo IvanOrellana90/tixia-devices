@@ -23,6 +23,7 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
+
 const MobileList = () => {
   const [mobiles, setMobiles] = useState([]);
   const nav = useNavigate();
@@ -118,14 +119,14 @@ const MobileList = () => {
     },
     {
       Header: 'State',
-      accessor: 'active',
+      accessor: (row) => (row.active ? 'Active' : 'Inactive'),
       Filter: ColumnFilter,
       Cell: ({ value }) => (
         <div className="d-flex align-items-center">
           <i
-            className={`fa fa-circle me-2 ${value ? 'text-success' : 'text-danger'}`}
+            className={`fa fa-circle me-2 ${value === 'Active' ? 'text-success' : 'text-danger'}`}
           ></i>
-          {value ? 'Active' : 'Inactive'}
+          {value}
         </div>
       ),
     },

@@ -50168,6 +50168,17 @@ div:where(.swal2-container) div:where(.swal2-popup) {
   color: #7e7e7e;
 }
 
+.bg-pda {
+  background-color: #8884D8 !important;
+}
+
+.bg-kiosk {
+  background-color: #82CA9D !important;
+}
+
+.bg-tourniquet {
+  background-color: #FF8042 !important;
+}
 .badge-xs {
   padding: 0px 8px;
   line-height: 14px;

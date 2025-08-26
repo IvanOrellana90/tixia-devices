@@ -1,112 +1,120 @@
-import { useState } from 'react';
-import ReactApexChart from 'react-apexcharts';
-import PropTypes from 'prop-types';
-import { Dropdown, Form } from 'react-bootstrap';
+import React, { useMemo } from 'react';
+import Chart from 'react-apexcharts';
+import { Badge } from 'react-bootstrap';
 
-const DevicesByModeChart = ({
-  data,
-  title = 'Devices by Mode',
-  clients,
-  onClientFilter,
-}) => {
-  const [showActiveDevices, setShowActiveDevices] = useState(false);
-  
-  const devicesData = showActiveDevices ? data.active : data.inactive;
-  const totalDevices = Object.values(devicesData).reduce((a, b) => a + b, 0);
+export default function DevicesByModeChart({ devices }) {
+  const { pda, kiosk, tourniquet, total } = useMemo(() => {
+    const pdaCount = devices.filter(
+      (d) => d.mode?.toLowerCase() === 'pda'
+    ).length;
+    const kioskCount = devices.filter(
+      (d) => d.mode?.toLowerCase() === 'kiosk'
+    ).length;
+    const tourniquetCount = devices.filter(
+      (d) => d.mode?.toLowerCase() === 'tourniquet'
+    ).length;
+    const totalCount = pdaCount + kioskCount + tourniquetCount;
 
-  const colors = ['#8884D8', '#FF8042', '#82CA9D'];
-  const categories = Object.keys(devicesData);
+    return {
+      pda: pdaCount,
+      kiosk: kioskCount,
+      tourniquet: tourniquetCount,
+      total: totalCount,
+    };
+  }, [devices]);
+
+  const chartOptions = {
+    chart: {
+      type: 'donut',
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150,
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 400,
+        },
+      },
+      events: {
+        // Deshabilitar el hover que cambia el valor central
+        dataPointMouseEnter: function () {
+          // No hacer nada para mantener el valor total
+        },
+        dataPointMouseLeave: function () {
+          // No hacer nada para mantener el valor total
+        },
+      },
+    },
+    labels: ['PDA', 'Kiosk', 'Tourniquet'],
+    colors: ['#8884D8', '#82CA9D', '#FF8042'],
+    legend: { position: 'bottom' },
+    dataLabels: {
+      enabled: false,
+    },
+    plotOptions: {
+      pie: {
+        donut: {
+          labels: {
+            show: false,
+          },
+        },
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: function (value) {
+          // Mostrar el porcentaje en el tooltip
+          const percentage = ((value / total) * 100).toFixed(1);
+          return `(${percentage}%)`;
+        },
+      },
+    },
+  };
+
+  const chartSeries = [pda, kiosk, tourniquet];
 
   return (
     <div className="card">
-      <div className="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
-        <h4 className="card-title mb-0">{title}</h4>
-
-        <Dropdown>
-          <Dropdown.Toggle variant="light" size="sm" id="clientFilterDropdown">
-            {data.clientFilter === 'all'
-              ? 'All Clients'
-              : clients.find((c) => c.id === data.clientFilter)?.name ||
-                'Select Client'}
-          </Dropdown.Toggle>
-
-          <Dropdown.Menu>
-            <Dropdown.Item onClick={() => onClientFilter('all')}>
-              All Clients
-            </Dropdown.Item>
-            {clients.map((client) => (
-              <Dropdown.Item
-                key={client.id}
-                onClick={() => onClientFilter(client.id)}
-              >
-                {client.name}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.Menu>
-        </Dropdown>
+      <div className="card-header">
+        <h4 className="card-title">Devices by Mode</h4>
       </div>
+      <div className="card-body">
+        <div className="row mx-0 align-items-center">
+          <div className="col-sm-8 text-center mb-3 mb-sm-0">
+            <Chart
+              options={chartOptions}
+              series={chartSeries}
+              type="donut"
+              height={300}
+            />
+          </div>
+          <div className="col-sm-4">
+            <div className="chart-deta">
+              <p className="card-title capitalize text-muted card-intro-title">
+                Summary:
+              </p>
+              <p className="mb-2 d-flex align-items-center">
+                <Badge className="badge-xs me-2 bg-pda"> </Badge>
+                PDA: <strong className="ms-1">{pda}</strong>
+              </p>
 
-      <div className="card-body pt-2">
-        <div className="border p-3 d-flex justify-content-between fs-14 rounded-lg mb-2">
-          <span className="text-black">
-            Total {showActiveDevices ? 'active' : 'inactive'} devices
-          </span>
-          <span className="text-black">{totalDevices}</span>
-        </div>
+              <p className="mb-2 d-flex align-items-center">
+                <Badge className="badge-xs me-2 bg-kiosk"> </Badge>
+                Kiosk: <strong className="ms-1">{kiosk}</strong>
+              </p>
 
-        <Form.Check
-          type="switch"
-          id="active-switch"
-          checked={showActiveDevices}
-          onChange={() => setShowActiveDevices((prev) => !prev)}
-          style={{
-            cursor: 'pointer',
-          }}
-          className="mb-4 status-devices ms-2"
-        />
-
-        <div className="text-center">
-          <ReactApexChart
-            options={{
-              chart: { type: 'pie' },
-              labels: categories,
-              colors: colors,
-              legend: { position: 'bottom' },
-              responsive: [
-                {
-                  breakpoint: 480,
-                  options: {
-                    chart: { width: 200 },
-                    legend: { position: 'bottom' },
-                  },
-                },
-              ],
-              tooltip: { y: { formatter: (value) => `${value}` } },
-            }}
-            series={Object.values(devicesData)}
-            type="pie"
-            height={350}
-          />
+              <p className="mb-2 d-flex align-items-center">
+                <Badge className="badge-xs me-2 bg-tourniquet"> </Badge>
+                Tourniquet: <strong className="ms-1">{tourniquet}</strong>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-DevicesByModeChart.propTypes = {
-  data: PropTypes.shape({
-    active: PropTypes.object,
-    inactive: PropTypes.object,
-    clientFilter: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  }).isRequired,
-  title: PropTypes.string,
-  clients: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      name: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  onClientFilter: PropTypes.func.isRequired,
-};
-
-export default DevicesByModeChart;
+}
