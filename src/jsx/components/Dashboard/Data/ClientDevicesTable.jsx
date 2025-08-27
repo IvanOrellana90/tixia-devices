@@ -34,9 +34,9 @@ export default function ClientDevicesTable({ clients, devices }) {
           <thead>
             <tr>
               <th>Client</th>
-              <th>Tourniquet</th>
               <th>PDA</th>
-              <th>Kiosk</th>
+              <th>KKO</th>
+              <th>TOR</th>
               <th>Total</th>
             </tr>
           </thead>
