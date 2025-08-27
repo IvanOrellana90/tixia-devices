@@ -7,6 +7,7 @@ import { supabase } from '../../supabase/client';
 import { toast } from 'react-toastify';
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { Card } from 'react-bootstrap';
 
 import { faPhoneFlip, faPhoneSlash } from '@fortawesome/free-solid-svg-icons';
 
@@ -194,23 +195,23 @@ function DashboardOverviewCard() {
         </div>
         <div className="row">
           <div className="col-xl-12 col-md-12">
-            <div className="row g-3 mb-3">
+            <div className="row">
               {' '}
               {cardData.map((data, ind) => (
                 <div className="col-6 col-lg-2" key={ind}>
-                  {' '}
-                  {/* Ajusta columnas según necesidad */}
-                  <div className="border outline-dashed rounded p-2 d-flex align-items-center bg-white h-100">
-                    <div className="avatar avatar-md bg-primary-light text-primary rounded d-flex align-items-center justify-content-center">
-                      {data.icon}
-                    </div>
-                    <div className="ms-2">
-                      <h3 className="mb-0 fw-semibold lh-1 fs-5">
-                        {data.number}
-                      </h3>
-                      <span className="fs-14 text-muted">{data.title}</span>
-                    </div>
-                  </div>
+                  <Card className="shadow-sm border">
+                    <Card.Body className="d-flex align-items-center p-2">
+                      <div className="avatar avatar-md bg-primary-light text-primary rounded d-flex align-items-center justify-content-center">
+                        {data.icon}
+                      </div>
+                      <div className="ms-2">
+                        <h3 className="mb-0 fw-semibold lh-1 fs-5">
+                          {data.number}
+                        </h3>
+                        <span className="fs-14 text-muted">{data.title}</span>
+                      </div>
+                    </Card.Body>
+                  </Card>
                 </div>
               ))}
             </div>
