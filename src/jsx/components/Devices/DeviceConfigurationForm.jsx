@@ -236,7 +236,7 @@ const DeviceConfigurationForm = ({ deviceId }) => {
         className="card-header d-flex justify-content-between align-items-center"
         style={{
           cursor: 'pointer',
-          background: collapsed ? '#fff' : '#e8ecef',
+          background: collapsed ? 'transparent' : 'rgba(0,0,0,0.05)',
           transition: 'background 0.2s',
         }}
         onClick={() => setCollapsed((prev) => !prev)}
