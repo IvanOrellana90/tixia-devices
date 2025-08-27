@@ -104,12 +104,12 @@ export default function DevicesByModeChart({ devices }) {
 
               <p className="mb-2 d-flex align-items-center">
                 <Badge className="badge-xs me-2 bg-kiosk"> </Badge>
-                Kiosk: <strong className="ms-1">{kiosk}</strong>
+                KKO: <strong className="ms-1">{kiosk}</strong>
               </p>
 
               <p className="mb-2 d-flex align-items-center">
                 <Badge className="badge-xs me-2 bg-tourniquet"> </Badge>
-                Tourniquet: <strong className="ms-1">{tourniquet}</strong>
+                TOR: <strong className="ms-1">{tourniquet}</strong>
               </p>
             </div>
           </div>
