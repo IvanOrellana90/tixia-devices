@@ -94,9 +94,7 @@ export default function DevicesByModeChart({ devices }) {
           </div>
           <div className="col-sm-4">
             <div className="chart-deta">
-              <p className="card-title capitalize text-muted card-intro-title">
-                Summary:
-              </p>
+              <p className="card-title">Summary:</p>
               <p className="mb-2 d-flex align-items-center">
                 <Badge className="badge-xs me-2 bg-pda"> </Badge>
                 PDA: <strong className="ms-1">{pda}</strong>
