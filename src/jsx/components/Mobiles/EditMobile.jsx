@@ -44,7 +44,7 @@ const EditMobile = () => {
             <div className="card-body">
               <Formik
                 initialValues={{
-                  imei: mobile.ime,
+                  imei: mobile.imei,
                   active: !!mobile.active,
                   is_rented: !!mobile.is_rented,
                   has_sim_card: !!mobile.has_sim_card,
