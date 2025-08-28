@@ -6,6 +6,8 @@ import { supabase } from '../../supabase/client';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const mobileSchema = Yup.object().shape({
+  imei: Yup.string()
+    .required('El IMEI es obligatorio'),
   active: Yup.boolean(),
   is_rented: Yup.boolean(),
   has_sim_card: Yup.boolean(),
@@ -42,6 +44,7 @@ const EditMobile = () => {
             <div className="card-body">
               <Formik
                 initialValues={{
+                  imei: mobile.ime,
                   active: !!mobile.active,
                   is_rented: !!mobile.is_rented,
                   has_sim_card: !!mobile.has_sim_card,
@@ -52,6 +55,7 @@ const EditMobile = () => {
                     const { error } = await supabase
                       .from('mobiles')
                       .update({
+                        imei: values.imei,
                         active: values.active,
                         is_rented: values.is_rented,
                         has_sim_card: values.has_sim_card,
@@ -76,12 +80,12 @@ const EditMobile = () => {
                       <div className="col-lg-6 mb-2">
                         <div className="form-group mb-3">
                           <label className="text-label">IMEI</label>
-                          <input
+                          <Field
+                            name="imei"
                             type="text"
                             className="form-control"
-                            value={mobile.imei || ''}
-                            readOnly
-                            disabled
+                            placeholder="Ingrese IMEI"
+                            maxLength={17}
                           />
                         </div>
                       </div>
