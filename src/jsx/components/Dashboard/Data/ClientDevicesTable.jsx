@@ -95,7 +95,7 @@ export default function ClientDevicesTable({ clients, devices }) {
   return (
     <div className="card">
       <div className="card-header">
-        <h4 className="card-title mb-0">Devices by Client</h4>
+        <h4 className="text-black mb-0">Devices by Client</h4>
       </div>
       <div className="card-body">
         <Table

@@ -1,5 +1,6 @@
 import DevicesByModeChart from '../Data/DevicesByModeChart';
 import ClientDevicesTable from '../Data/ClientDevicesTable';
+import DevicesByVersionChart from '../Data/DeviceByVersionChart';
 
 const OverviewTab = ({ devices, clients }) => {
   if (!devices || devices.length === 0) {
@@ -14,6 +15,9 @@ const OverviewTab = ({ devices, clients }) => {
       </div>
       <div className="col-md-12 col-xl-8">
         <ClientDevicesTable clients={clients} devices={devices} />
+      </div>
+      <div className="col-xl-4 col-md-6">
+        <DevicesByVersionChart />
       </div>
     </div>
   );
