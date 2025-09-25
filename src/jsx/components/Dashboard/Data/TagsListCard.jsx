@@ -87,9 +87,6 @@ export default function ReleasesListCard() {
             <div className="col-md-10">
               {activeRelease && (
                 <div>
-                  <h6>
-                    <span className="badge bg-info">{activeRelease.name}</span>
-                  </h6>
                   <p className="mb-1">
                     Published:{' '}
                     {activeRelease.published_at
