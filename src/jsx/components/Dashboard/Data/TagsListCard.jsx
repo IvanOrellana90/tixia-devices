@@ -111,7 +111,7 @@ export default function ReleasesListCard() {
                     href={activeRelease.html_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn btn-sm btn-outline-dark mt-2"
+                    className="btn btn-sm btn-outline-dark"
                   >
                     <i className="fab fa-github"></i>
                   </a>

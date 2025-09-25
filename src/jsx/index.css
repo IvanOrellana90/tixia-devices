@@ -686,3 +686,16 @@ button.react-calendar__tile.react-calendar__month-view__days__day:hover {
 .markdown-body>h2 {
   font-size: 1.2rem;
 }
+.markdown-body p {
+  margin-top: 5px;
+}
+
+.markdown-body a {
+  color: #2781d5;
+}
+
+.markdown-body ul,
+.markdown-body li {
+  list-style-type: disc;
+  margin-left: 10px;
+}
