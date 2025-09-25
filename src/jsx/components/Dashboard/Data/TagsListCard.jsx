@@ -20,19 +20,21 @@ export default function ReleasesListCard() {
       try {
         const { data, error } = await supabase
           .from('devices')
-          .select('version_name')
-          .not('version_name', 'is', null);
+          .select('version_name');
 
         if (error) throw error;
 
         const counts = {};
         data.forEach((d) => {
-          if (!counts[d.version_name]) counts[d.version_name] = 0;
-          counts[d.version_name]++;
+          // aplica el default aquí 👇
+          const version = d.version_name || '1.50';
+          if (!counts[version]) counts[version] = 0;
+          counts[version]++;
         });
         setDeviceCounts(counts);
 
-        let versions = [...new Set(data.map((d) => d.version_name))];
+        // set de versiones únicas con default aplicado
+        let versions = [...new Set(data.map((d) => d.version_name || '1.50'))];
         versions.sort((a, b) => parseFloat(b) - parseFloat(a)); // sort descending
 
         const results = [];
