@@ -55,11 +55,11 @@ export default function DevicesByVersionChart() {
       });
 
       // Sort by version number (descending)
-const sorted = Object.entries(grouped).sort((a, b) => {
-  const numA = parseFloat(a[0]);
-  const numB = parseFloat(b[0]);
-  return numB - numA; // de mayor a menor
-});
+      const sorted = Object.entries(grouped).sort((a, b) => {
+        const numA = parseFloat(a[0]);
+        const numB = parseFloat(b[0]);
+        return numB - numA; // de mayor a menor
+      });
 
       const versions = sorted.map(([version]) => version);
 
