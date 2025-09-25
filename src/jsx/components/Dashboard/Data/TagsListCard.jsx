@@ -98,7 +98,14 @@ export default function ReleasesListCard() {
 
                   {activeRelease.body && (
                     <div className="markdown-body small text-muted">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: ({ node, ...props }) => (
+                            <a {...props} target="_blank" rel="noreferrer" />
+                          ),
+                        }}
+                      >
                         {activeRelease.body}
                       </ReactMarkdown>
                     </div>
