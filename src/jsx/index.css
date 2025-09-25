@@ -682,3 +682,7 @@ button.react-calendar__tile.react-calendar__month-view__days__day:hover {
 .rating-stars ul > li.star.selected > i.fa {
   color: #ff912c;
 }
+
+.markdown-body>h2 {
+  font-size: 1.2rem;
+}
