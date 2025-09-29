@@ -10,24 +10,49 @@ const configFields = [
     key: 'debug_mode',
     label: 'Debug Mode',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'orientation_mode',
     label: 'Orientation Mode',
     type: 'select',
-    options: ['default', 'horizontal', 'vertical'],
+    options: [
+      { label: 'Default', value: 'default' },
+      { label: 'Horizontal', value: 'horizontal' },
+      { label: 'Vertical', value: 'vertical' },
+    ],
     initial: 'default',
+  },
+  {
+    key: 'document_validation',
+    label: 'Document Validation',
+    type: 'select',
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
+    initial: 'True',
   },
   {
     key: 'config_mode',
     label: 'Config Mode',
     type: 'select',
-    options: ['entry', 'exit'],
+    options: [
+      { label: 'Entry', value: 'entry' },
+      { label: 'Exit', value: 'exit' },
+    ],
     initial: 'entry',
   },
-  { key: 'camera_zoom', label: 'Camera Zoom', type: 'number', initial: '0' },
+  {
+    key: 'camera_zoom',
+    label: 'Camera Zoom',
+    type: 'number',
+    initial: '0',
+  },
   {
     key: 'movement_sensibility',
     label: 'Movement Sensibility',
@@ -44,14 +69,20 @@ const configFields = [
     key: 'exit_confirmation',
     label: 'Exit Confirmation',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'manual_entry',
     label: 'Manual Entry',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'True',
   },
   {
@@ -64,55 +95,92 @@ const configFields = [
     key: 'enable_flash',
     label: 'Enable Flash',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'enable_chip_validation',
     label: 'Enable Chip Validation',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'enable_vehicle_flow',
     label: 'Enable Vehicle Flow',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'enable_carrier_flow',
     label: 'Enable Carrier Flow',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'raspberry_photo',
     label: 'Raspberry Photo',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'access_fast_upload',
     label: 'Access Fast Upload',
     type: 'select',
-    options: ['True', 'False'],
+    options: [
+      { label: 'True', value: 'True' },
+      { label: 'False', value: 'False' },
+    ],
     initial: 'False',
   },
   {
     key: 'full_sync_hour',
     label: 'Full Sync Hour',
-    type: 'number',
+    type: 'select',
+    options: Array.from({ length: 24 }, (_, i) => ({
+      label: `${i}:00`,
+      value: i.toString(),
+    })),
     initial: '2',
   },
-  { key: 'shift_rule', label: 'Shift Rule', type: 'number', initial: '0' },
+  {
+    key: 'shift_rule',
+    label: 'Shift Rule',
+    type: 'select',
+    options: [
+      { label: 'False', value: '0' },
+      { label: '6 a 9', value: '1' },
+      { label: '6 a 13', value: '2' },
+    ],
+    initial: '0',
+  },
   {
     key: 'double_shift_rule',
     label: 'Double Shift Rule',
-    type: 'number',
+    type: 'select',
+    options: [
+      { label: 'False', value: '0' },
+      { label: '0 a 9', value: '1' },
+      { label: '0 a 13', value: '2' },
+    ],
     initial: '0',
   },
 ];
@@ -276,8 +344,8 @@ const DeviceConfigurationForm = ({ deviceId }) => {
                             disabled={!isEditing}
                           >
                             {field.options.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
                               </option>
                             ))}
                           </Field>
