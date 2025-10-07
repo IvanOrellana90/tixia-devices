@@ -23,6 +23,7 @@ import { toast } from 'react-toastify';
 import { fetchNagiosStatus } from '../../services/nagiosService';
 import ServiceCard from './ServiceCard';
 import IconBubble from './IconBubble';
+import { getLastAccess } from '../../services/getLastAccess';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -30,6 +31,22 @@ const DeviceDetail = () => {
   const [showRemoveAlert, setShowRemoveAlert] = useState(false);
   const [removeInput, setRemoveInput] = useState('');
   const [nagios, setNagios] = useState(null);
+  const [lastAccess, setLastAccess] = useState(null);
+
+  const getAccessStyle = (accessTime) => {
+    if (!accessTime || accessTime === '00:00:00')
+      return { color: '#dc3545', fontSize: '1rem', fontWeight: '200' };
+
+    const now = new Date();
+    const accessDate = new Date(accessTime);
+    const diffHours = (now - accessDate) / 36e5;
+
+    if (diffHours <= 24) {
+      return { color: '#007bff', fontWeight: '200', fontSize: '1rem' };
+    } else {
+      return { color: '#ffc107', fontWeight: '200', fontSize: '1rem' };
+    }
+  };
 
   useEffect(() => {
     if (device?.location) {
@@ -47,7 +64,7 @@ const DeviceDetail = () => {
         .from('devices')
         .select(
           `*,
-          client:client_id (name),
+          client:client_id (name, bigquery_db),
           mobile:mobile_id (model, imei, has_sim_card, is_rented, active),
           site:site_id (name),
           facility:facility_id (name)
@@ -60,6 +77,20 @@ const DeviceDetail = () => {
     };
     fetchDevice();
   }, [id]);
+
+  useEffect(() => {
+    const fetchLastAccess = async () => {
+      if (device?.client?.bigquery_db && device?.location) {
+        const client_db = device.client.bigquery_db;
+        const device_location = device.location;
+
+        const access = await getLastAccess(client_db, device_location);
+        if (access) setLastAccess(access.access);
+      }
+    };
+
+    fetchLastAccess();
+  }, [device]);
 
   // Funcion to render the mobile status
   const renderMobileStatus = () => {
@@ -372,6 +403,29 @@ const DeviceDetail = () => {
                         <span className="fw-light me-2">Model:</span>
                         {device?.mobile?.model || (
                           <span className="text-muted">Not assigned</span>
+                        )}
+                      </li>
+                      {/* Last Access */}
+                      <li className="mb-1 d-flex align-items-center">
+                        <div
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faClock}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Last Access:</span>
+
+                        {lastAccess ? (
+                          <span style={getAccessStyle(lastAccess)}>
+                            {new Date(lastAccess).toLocaleString()}
+                          </span>
+                        ) : (
+                          <span style={getAccessStyle('00:00:00')}>
+                            No registered access
+                          </span>
                         )}
                       </li>
                     </ul>
