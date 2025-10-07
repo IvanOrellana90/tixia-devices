@@ -24,6 +24,7 @@ const DEFAULTS_SERVER = {
   movement_sensibility: '30',
   manual_entry_password: '438082',
   exit_confirmation: 'False',
+  document_validation: 'True',
   manual_entry: 'True',
   time_standby_screen: '20',
   enable_flash: 'False',
