@@ -1,7 +1,7 @@
 // netlify/functions/sendPushToDevice.js
 const { createClient } = require('@supabase/supabase-js');
 const admin = require('firebase-admin');
-const { getServiceAccount } = require('../utils/getServiceAccount');
+const { getServiceAccount } = require('./getServiceAccount');
 
 const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
 

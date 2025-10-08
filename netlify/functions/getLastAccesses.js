@@ -1,5 +1,5 @@
 const { BigQuery } = require('@google-cloud/bigquery');
-const { getServiceAccount } = require('../utils/getServiceAccount');
+const { getServiceAccount } = require('./getServiceAccount');
 
 exports.handler = async (event) => {
   try {
@@ -13,6 +13,8 @@ exports.handler = async (event) => {
         }),
       };
     }
+
+    const credentials = await getServiceAccount('gcp.json');
 
     // ✅ Sigue usando credentials directas (sin GoogleAuth)
     const bigquery = new BigQuery({

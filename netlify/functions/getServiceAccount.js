@@ -1,16 +1,22 @@
 const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
-const path = require('path');
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// caché en memoria local (evita descargar en cada request)
+// caché en memoria para evitar descargas repetidas
 const cache = {};
 
+/**
+ * Descarga y devuelve un archivo JSON almacenado en el bucket
+ * privado "service-accounts" de Supabase.
+ *
+ * @param {string} filename - Nombre del archivo (ej. "gsa.json" o "gcp.json")
+ * @returns {Promise<object>} Objeto JSON con las credenciales
+ */
 async function getServiceAccount(filename) {
+  // Usa caché si ya fue descargado
   if (cache[filename]) return cache[filename];
 
   const { data, error } = await supabase.storage
@@ -22,10 +28,6 @@ async function getServiceAccount(filename) {
 
   const content = await data.text();
   const json = JSON.parse(content);
-
-  // guardar copia temporal en /tmp (opcional)
-  const tempPath = path.join('/tmp', filename);
-  fs.writeFileSync(tempPath, content);
 
   cache[filename] = json;
   return json;
