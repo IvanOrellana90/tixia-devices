@@ -1,9 +1,7 @@
-// netlify/functions/get-release.js
-// Node 18+ (fetch disponible)
 exports.handler = async function () {
   try {
-    const owner = process.env.GH_OWNER;
-    const repo = process.env.GH_REPO;
+    const owner = 'ksec-project';
+    const repo = 'ksec-access-rn';
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
     console.log('Owner:', owner, 'Repo:', repo, 'Token?', !!GITHUB_TOKEN);
@@ -14,8 +12,7 @@ exports.handler = async function () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           error: 'missing_env_vars',
-          message:
-            'Debes definir GH_OWNER y GH_REPO en las variables de entorno.',
+          message: 'Debes definir owner y repo en las variables de entorno.',
         }),
       };
     }

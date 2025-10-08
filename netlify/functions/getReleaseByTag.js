@@ -1,8 +1,7 @@
-// netlify/functions/get-release-by-tag.js
 exports.handler = async function (event) {
   try {
-    const owner = process.env.GH_OWNER;
-    const repo = process.env.GH_REPO;
+    const owner = 'ksec-project';
+    const repo = 'ksec-access-rn';
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
     const tag = event.queryStringParameters.tag;

@@ -17,7 +17,7 @@ exports.handler = async (event) => {
 
     // ✅ Sigue usando credentials directas (sin GoogleAuth)
     const bigquery = new BigQuery({
-      projectId: process.env.GCP_PROJECT_ID,
+      projectId: 'ksec-datawarehouse',
       credentials,
     });
 
@@ -33,7 +33,7 @@ exports.handler = async (event) => {
         plates,
         informed_result,
         facility_id
-      FROM \`${process.env.GCP_PROJECT_ID}.${client_db}.access_logs\`
+      FROM \`ksec-datawarehouse.${client_db}.access_logs\`
       WHERE LOWER(location) = LOWER(@device_location)
       ORDER BY access DESC
       LIMIT 5
