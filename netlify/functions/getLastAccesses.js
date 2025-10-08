@@ -1,4 +1,5 @@
 const { BigQuery } = require('@google-cloud/bigquery');
+const credentials = require('../config/gcp.json');
 
 exports.handler = async (event) => {
   try {
@@ -12,8 +13,6 @@ exports.handler = async (event) => {
         }),
       };
     }
-
-    const credentials = JSON.parse(process.env.GCP_CREDENTIALS_JSON);
 
     // ✅ Sigue usando credentials directas (sin GoogleAuth)
     const bigquery = new BigQuery({

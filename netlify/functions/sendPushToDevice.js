@@ -1,14 +1,13 @@
 // netlify/functions/sendPushToDevice.js
 const { createClient } = require('@supabase/supabase-js');
 const admin = require('firebase-admin');
+const serviceAccount = require('../config/gsa.json');
 
-const { SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_SERVICE_ACCOUNT_KEY } =
-  process.env;
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
 
 // ---- Firebase Admin ----
 const initializeFirebase = () => {
   if (admin.apps.length) return admin.app();
-  const serviceAccount = JSON.parse(GOOGLE_SERVICE_ACCOUNT_KEY);
   serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
   return admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
