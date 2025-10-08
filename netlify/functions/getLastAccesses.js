@@ -1,5 +1,5 @@
 const { BigQuery } = require('@google-cloud/bigquery');
-const credentials = require('../config/gcp.json');
+const { getServiceAccount } = require('../utils/getServiceAccount');
 
 exports.handler = async (event) => {
   try {

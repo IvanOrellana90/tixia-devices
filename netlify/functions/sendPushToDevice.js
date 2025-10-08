@@ -1,19 +1,21 @@
 // netlify/functions/sendPushToDevice.js
 const { createClient } = require('@supabase/supabase-js');
 const admin = require('firebase-admin');
-const serviceAccount = require('../config/gsa.json');
+const { getServiceAccount } = require('../utils/getServiceAccount');
 
 const { SUPABASE_URL, SUPABASE_ANON_KEY } = process.env;
 
 // ---- Firebase Admin ----
-const initializeFirebase = () => {
+async function initializeFirebase() {
   if (admin.apps.length) return admin.app();
-  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+  const serviceAccount = await getServiceAccount('gsa.json');
+
   return admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     projectId: serviceAccount.project_id,
   });
-};
+}
 
 const json = (status, body) => ({
   statusCode: status,
@@ -35,7 +37,7 @@ exports.handler = async (event) => {
 
   let deviceId; // accesible en catch
   try {
-    const app = initializeFirebase();
+    const app = await initializeFirebase();
 
     const { device_id, unique_id, title, body, data } = JSON.parse(
       event.body || '{}'
