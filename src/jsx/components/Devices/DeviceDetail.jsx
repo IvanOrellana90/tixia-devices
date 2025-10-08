@@ -24,6 +24,7 @@ import { fetchNagiosStatus } from '../../services/nagiosService';
 import ServiceCard from './ServiceCard';
 import IconBubble from './IconBubble';
 import { getLastAccess } from '../../services/getLastAccess';
+import AccessesChartCard from './AccessesChartCard';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -456,6 +457,15 @@ const DeviceDetail = () => {
       <div className="row">
         <div className="col-xl-12 col-xxl-12 col-sm-12">
           <DeviceConfigurationForm deviceId={id} />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-xl-12 col-xxl-12 col-sm-12">
+          <AccessesChartCard
+            client_db={device?.client?.bigquery_db}
+            device_location={device?.location}
+          />
         </div>
       </div>
 
