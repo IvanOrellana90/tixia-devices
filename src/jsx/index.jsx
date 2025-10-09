@@ -42,6 +42,7 @@ import ActiveDevices from './components/Devices/FilterDevices/ActiveDevices';
 import InactiveDevices from './components/Devices/FilterDevices/InactiveDevices';
 import EditDevice from './components/Devices/EditDevice';
 import DeviceDetail from './components/Devices/DeviceDetail';
+import DeviceInformationList from './components/Devices/DeviceInformationList';
 
 // Pages
 import Login from './pages/Login';
@@ -84,6 +85,7 @@ const Markup = () => {
     { url: 'device/:id', component: <DeviceDetail /> },
     { url: 'active-devices', component: <ActiveDevices /> },
     { url: 'inactive-devices', component: <InactiveDevices /> },
+    { url: 'device-information', component: <DeviceInformationList /> },
   ];
 
   return (

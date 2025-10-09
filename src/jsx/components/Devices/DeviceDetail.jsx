@@ -16,6 +16,9 @@ import {
   faUser,
   faMobileRetro,
   faGear,
+  faWindowRestore,
+  faBookmark,
+  faCode,
 } from '@fortawesome/free-solid-svg-icons';
 import ActivityDetail from './ActivityDetail';
 import DeviceConfigurationForm from './DeviceConfigurationForm';
@@ -28,25 +31,28 @@ import { getLastAccess } from '../../services/getLastAccess';
 const DeviceDetail = () => {
   const { id } = useParams();
   const [device, setDevice] = useState(null);
+  const [lastReport, setLastReport] = useState(null);
   const [showRemoveAlert, setShowRemoveAlert] = useState(false);
   const [removeInput, setRemoveInput] = useState('');
   const [nagios, setNagios] = useState(null);
   const [lastAccess, setLastAccess] = useState(null);
 
-  const getAccessStyle = (accessTime) => {
-    if (!accessTime || accessTime === '00:00:00')
-      return { color: '#dc3545', fontSize: '1rem', fontWeight: '200' };
-
-    const now = new Date();
-    const accessDate = new Date(accessTime);
-    const diffHours = (now - accessDate) / 36e5;
-
-    if (diffHours <= 24) {
-      return { color: '#007bff', fontWeight: '200', fontSize: '1rem' };
-    } else {
-      return { color: '#ffc107', fontWeight: '200', fontSize: '1rem' };
+  useEffect(() => {
+    if (device?.location) {
+      const fetchLastReport = async () => {
+        const { data: lastReport, error } = await supabase
+          .from('device_reports')
+          .select('created_at, windows_number, version_name')
+          .eq('location', device.location)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (error) console.error('Error fetching last report:', error.message);
+        setLastReport(lastReport);
+      };
+      fetchLastReport();
     }
-  };
+  }, [device?.location]);
 
   useEffect(() => {
     if (device?.location) {
@@ -137,6 +143,72 @@ const DeviceDetail = () => {
       );
   };
 
+  const renderLastReport = (lastReport, lastAccess) => {
+    const hasReport = lastReport && lastReport.created_at;
+    const hasAccess = lastAccess && lastAccess !== '00:00:00';
+
+    let alertClass = 'alert-danger';
+    let reportDate = 'No available';
+    let accessDate = 'No registered';
+
+    // 🔹 Evaluar reporte
+    if (hasReport) {
+      const reportTime = new Date(lastReport.created_at);
+      const now = new Date();
+      const diffHours = (now - reportTime) / (1000 * 60 * 60);
+
+      if (diffHours < 24) {
+        alertClass = 'alert-success';
+      } else {
+        alertClass = 'alert-warning';
+      }
+
+      reportDate = reportTime.toLocaleString('es-CL', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    }
+
+    // 🔹 Evaluar acceso (basado en lastAccess global)
+    if (hasAccess) {
+      const accessTime = new Date(lastAccess);
+      accessDate = accessTime.toLocaleString('es-CL', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } else if (hasReport) {
+      // ⚠️ Tiene reporte pero sin acceso
+      alertClass = 'alert-warning';
+    }
+
+    return (
+      <div
+        role="alert"
+        className={`fade alert ${alertClass} alert-dismissible show`}
+        style={{ cursor: 'default' }}
+      >
+        <FontAwesomeIcon icon={faBookmark} className="me-2" />
+        <strong>Report Information</strong>
+
+        <div className="small mt-1">
+          Last Report: <strong>{reportDate}</strong>
+        </div>
+
+        <div className="small mt-1">
+          Last Access: <strong>{accessDate}</strong>
+        </div>
+      </div>
+    );
+  };
+
   // Función para renderizar el estado del dispositivo
   const renderDeviceStatus = () => {
     const nagiosUrl =
@@ -182,7 +254,7 @@ const DeviceDetail = () => {
           <FontAwesomeIcon icon={faCircleXmark} className="me-2" />
           <strong>Device Unreachable</strong>
           <div className="small mt-1">
-            Last connection: <strong>{nagios?.lastCheck || 'Unknown'}</strong>
+            Last check: <strong>{nagios?.lastCheck || 'Unknown'}</strong>
           </div>
         </div>
       );
@@ -405,27 +477,36 @@ const DeviceDetail = () => {
                           <span className="text-muted">Not assigned</span>
                         )}
                       </li>
-                      {/* Last Access */}
+                      {/* Windows */}
                       <li className="mb-1 d-flex align-items-center">
                         <div
                           className="d-flex align-items-center justify-content-center me-2"
                           style={{ width: '24px', height: '24px' }}
                         >
                           <FontAwesomeIcon
-                            icon={faClock}
+                            icon={faWindowRestore}
                             className="me-2 fs-18 text-primary"
                           />
                         </div>
-                        <span className="fw-light me-2">Last Access:</span>
-
-                        {lastAccess ? (
-                          <span style={getAccessStyle(lastAccess)}>
-                            {new Date(lastAccess).toLocaleString()}
-                          </span>
-                        ) : (
-                          <span style={getAccessStyle('00:00:00')}>
-                            No registered access
-                          </span>
+                        <span className="fw-light me-2">Windows:</span>
+                        {lastReport?.windows_number || (
+                          <span className="text-muted">0</span>
+                        )}
+                      </li>
+                      {/* Version */}
+                      <li className="mb-1 d-flex align-items-center">
+                        <div
+                          className="d-flex align-items-center justify-content-center me-2"
+                          style={{ width: '24px', height: '24px' }}
+                        >
+                          <FontAwesomeIcon
+                            icon={faCode}
+                            className="me-2 fs-18 text-primary"
+                          />
+                        </div>
+                        <span className="fw-light me-2">Version:</span>
+                        {device?.version_name || (
+                          <span className="text-muted">0</span>
                         )}
                       </li>
                     </ul>
@@ -437,6 +518,7 @@ const DeviceDetail = () => {
                   <div className="clearfix mt-3 mt-xl-0 ms-auto d-flex flex-column">
                     <div className="clearfix mb-3 text-xl-center">
                       {renderDeviceStatus()}
+                      {renderLastReport(lastReport, lastAccess)}
                       {renderMobileStatus()}
                     </div>
                   </div>

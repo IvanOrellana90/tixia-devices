@@ -11,7 +11,6 @@ import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
-import { is } from 'date-fns/locale';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {

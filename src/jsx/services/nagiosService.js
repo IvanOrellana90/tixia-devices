@@ -95,9 +95,8 @@ export async function fetchNagiosStatus(deviceLocation) {
     if (!host) return null;
 
     const statusMap = {
-      0: { text: 'UP', color: 'success' },
-      1: { text: 'DOWN', color: 'danger' },
-      2: { text: 'UNREACHABLE', color: 'warning' },
+      2: { text: 'UP', color: 'success' },
+      4: { text: 'DOWN', color: 'danger' },
     };
     const stateInfo = statusMap[host.status] || {
       text: 'Unknown',

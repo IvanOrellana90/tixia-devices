@@ -23,8 +23,10 @@ async function getServiceAccount(filename) {
     .from('service-accounts')
     .download(filename);
 
-  if (error)
-    throw new Error(`Error al descargar ${filename}: ${error.message}`);
+  if (error || !data) {
+    console.error('Supabase download error:', error);
+    throw new Error(`Error al descargar ${filename}: ${JSON.stringify(error)}`);
+  }
 
   const content = await data.text();
   const json = JSON.parse(content);
