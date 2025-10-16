@@ -15,7 +15,7 @@ import {
   faClock,
   faRobot,
 } from '@fortawesome/free-solid-svg-icons';
-import { fetchNagiosStatus } from '../../services/nagiosService';
+import { fetchNagiosHostStatus } from '../../services/nagiosService';
 
 // 🔍 Filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -57,7 +57,7 @@ const renderNagiosStatus = (nagios, location) => {
     );
   }
 
-  if (nagios.status === 'DOWN' || nagios.status === 'UNREACHABLE') {
+  if (nagios.status === 'Down' || nagios.status === 'UNREACHABLE') {
     return wrapper(
       <div className="d-flex align-items-center">
         <FontAwesomeIcon icon={faCircleXmark} className="text-danger me-2" />
@@ -66,11 +66,11 @@ const renderNagiosStatus = (nagios, location) => {
     );
   }
 
-  if (nagios.status === 'UP') {
+  if (nagios.status === 'Up') {
     return wrapper(
       <div className="d-flex align-items-center">
         <FontAwesomeIcon icon={faCircleCheck} className="text-success me-2" />
-        <span>UP ({nagios.uptime})</span>
+        <span>{nagios.status}</span>
       </div>
     );
   }
@@ -91,17 +91,16 @@ const DeviceInformationList = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+
       // 📦 Devices
       const { data: devicesData, error: devicesError } = await supabase.from(
         'devices'
       ).select(`
-        id,
-        location,
-        version_name,
-        mobile:mobile_id (
-          model
-        )
-      `);
+      id,
+      location,
+      version_name,
+      mobile:mobile_id ( model )
+    `);
 
       // 📦 Último reporte por location
       const { data: reportsData, error: reportsError } = await supabase.rpc(
@@ -114,18 +113,52 @@ const DeviceInformationList = () => {
         return;
       }
 
-      // 📡 Obtener estado Nagios en paralelo
-      const nagiosStates = await Promise.all(
-        devicesData.map(async (d) => ({
-          location: d.location,
-          nagios: await fetchNagiosStatus(d.location),
-        }))
-      );
+      // 🧠 Obtener TODOS los hosts de Nagios en una sola llamada
+      const { hostlist } = await fetchNagiosHostStatus();
 
-      // 🧩 Asociar estado Nagios a cada device
-      const enrichedDevices = devicesData.map((d) => {
-        const found = nagiosStates.find((n) => n.location === d.location);
-        return { ...d, nagios: found?.nagios || null };
+      // 🔍 Normalizamos los nombres de hosts para hacer match flexible
+      const normalize = (str) => str?.toLowerCase().trim();
+
+      // 🧩 Asignamos estado Nagios según el hostlist
+      const enrichedDevices = devicesData.map((device) => {
+        const normalize = (str) =>
+          str?.toString().toLowerCase().replace(/\s+/g, '').trim();
+
+        // Como hostlist es un objeto { name: statusCode }
+        const entries = hostlist ? Object.entries(hostlist) : [];
+
+        // Buscar coincidencia exacta o parcial entre device.location y key de Nagios
+        const matchEntry = entries.find(
+          ([key]) => normalize(key) === normalize(device.location)
+        );
+
+        if (!matchEntry) {
+          return { ...device, nagios: null };
+        }
+
+        const [hostName, statusCode] = matchEntry;
+
+        // Mapear los códigos de Nagios (2=Up, 4=Down, 1=UNREACHABLE, 0=PENDING, etc.)
+        const statusMap = {
+          0: { text: 'PENDING', color: 'secondary' },
+          1: { text: 'UNREACHABLE', color: 'warning' },
+          2: { text: 'Up', color: 'success' },
+          4: { text: 'Down', color: 'danger' },
+        };
+
+        const stateInfo = statusMap[statusCode] || {
+          text: 'Unknown',
+          color: 'secondary',
+        };
+
+        return {
+          ...device,
+          nagios: {
+            name: hostName,
+            status: stateInfo.text,
+            color: stateInfo.color,
+          },
+        };
       });
 
       setDevices(enrichedDevices);
@@ -145,9 +178,9 @@ const DeviceInformationList = () => {
         ...device,
         model: device.mobile?.model || 'N/A',
         last_windows: lastReport ? lastReport.windows_number : 0,
-        last_version:
-          lastReport?.version_name || device.version_name || 'unknown',
+        last_version: lastReport?.version_name || device.version_name || '',
         system_version: lastReport?.system_version || '',
+        last_report_date: lastReport?.created_at || null,
       };
     });
   }, [devices, reports]);
@@ -196,6 +229,24 @@ const DeviceInformationList = () => {
         },
       },
       {
+        Header: 'Last Report',
+        accessor: 'last_report_date',
+        Filter: ColumnFilter,
+        Cell: ({ value }) => {
+          if (!value) return <span className="text-muted">No data</span>;
+          const date = new Date(value);
+          return (
+            <span>
+              {date.toLocaleDateString()}{' '}
+              {date.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+          );
+        },
+      },
+      {
         Header: 'Nagios',
         accessor: (row) => row.nagios?.status || 'Unknown',
         Filter: ColumnFilter,
@@ -240,11 +291,11 @@ const DeviceInformationList = () => {
 
   return (
     <>
-      <PageTitle activeMenu="Devices Information" motherMenu="Table" />
+      <PageTitle activeMenu="Device Information List" motherMenu="Table" />
 
       <div className="card">
         <div className="card-header">
-          <h4 className="card-title">Device Information</h4>
+          <h4 className="card-title">Device Information List</h4>
         </div>
 
         <div className="card-body">
@@ -286,9 +337,9 @@ const DeviceInformationList = () => {
                                 <span className="ms-1">
                                   {column.isSorted ? (
                                     column.isSortedDesc ? (
-                                      <i className="fa fa-arrow-down" />
+                                      <i className="fa fa-arrow-Down" />
                                     ) : (
-                                      <i className="fa fa-arrow-up" />
+                                      <i className="fa fa-arrow-Up" />
                                     )
                                   ) : (
                                     ''

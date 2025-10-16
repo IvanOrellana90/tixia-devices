@@ -20,7 +20,7 @@ export const MenuList = [
         to: 'device-list',
       },
       {
-        title: 'Devices Information',
+        title: 'Device Information List',
         to: 'device-information',
       },
     ],
