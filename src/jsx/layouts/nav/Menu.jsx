@@ -79,7 +79,7 @@ export const MenuList = [
 
   // Facility
   {
-    title: 'Facility',
+    title: 'Facilities',
     classsChange: 'mm-collapse',
     iconStyle: <i className="flaticon-381-notification" />,
     content: [
@@ -88,9 +88,23 @@ export const MenuList = [
         to: 'add-facility',
       },
       {
-        title: 'Facility List',
-        to: 'facility-list',
+        title: 'Facilities List',
+        to: 'facilities-list',
       },
+    ],
+  },
+
+  { type: 'divider' },
+
+  // ✅ NEW SECTION: Visits
+  {
+    title: 'Visits',
+    classsChange: 'mm-collapse',
+    iconStyle: <i className="flaticon-381-calendar-7" />, // puedes cambiar el ícono
+    content: [
+      { title: 'Add Visit', to: 'add-visit' },
+      { title: 'Visit List', to: 'visit-list' },
+      { title: 'Visit Calendar', to: 'visit-calendar' },
     ],
   },
 ];

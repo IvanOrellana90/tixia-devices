@@ -44,6 +44,9 @@ import EditDevice from './components/Devices/EditDevice';
 import DeviceDetail from './components/Devices/DeviceDetail';
 import DeviceInformationList from './components/Devices/DeviceInformationList';
 
+// Visit
+import AddVisit from './components/Visits/AddVisit';
+
 // Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
@@ -86,6 +89,10 @@ const Markup = () => {
     { url: 'active-devices', component: <ActiveDevices /> },
     { url: 'inactive-devices', component: <InactiveDevices /> },
     { url: 'device-information', component: <DeviceInformationList /> },
+
+    //Visit
+    { url: 'add-visit', component: <AddVisit /> },
+
   ];
 
   return (

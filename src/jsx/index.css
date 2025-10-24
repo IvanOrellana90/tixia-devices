@@ -699,3 +699,6 @@ button.react-calendar__tile.react-calendar__month-view__days__day:hover {
   list-style-type: disc;
   margin-left: 10px;
 }
+.react-datepicker-wrapper {
+  display: block !important;
+}
