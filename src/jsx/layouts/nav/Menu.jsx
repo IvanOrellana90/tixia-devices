@@ -100,11 +100,23 @@ export const MenuList = [
   {
     title: 'Visits',
     classsChange: 'mm-collapse',
-    iconStyle: <i className="flaticon-381-calendar-7" />, // puedes cambiar el ícono
+    iconStyle: <i className="flaticon-381-calendar-7" />,
     content: [
       { title: 'Add Visit', to: 'add-visit' },
       { title: 'Visit List', to: 'visit-list' },
       { title: 'Visit Calendar', to: 'visit-calendar' },
+    ],
+  },
+
+  {
+    title: 'Users',
+    classsChange: 'mm-collapse',
+    iconStyle: <i className="flaticon-381-user-7" />,
+    content: [
+      {
+        title: 'User List',
+        to: 'user-list',
+      },
     ],
   },
 ];
