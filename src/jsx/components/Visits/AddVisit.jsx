@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { supabase } from '../../supabase/client';
@@ -9,9 +10,15 @@ import 'react-datepicker/dist/react-datepicker.css';
 import PageTitle from '../../layouts/PageTitle';
 
 const visitSchema = Yup.object().shape({
-  client_id: Yup.number().required('Client is required'),
-  site_id: Yup.number().required('Site is required'),
-  facility_id: Yup.number().nullable(), // ✅ facility opcional
+  client_id: Yup.number()
+    .transform((v, o) => (o === '' ? undefined : Number(o)))
+    .required('Client is required'),
+  site_id: Yup.number()
+    .transform((v, o) => (o === '' ? undefined : Number(o)))
+    .required('Site is required'),
+  facility_id: Yup.number()
+    .transform((v, o) => (o === '' ? null : Number(o)))
+    .nullable(),
   date: Yup.date().required('Date is required'),
   type: Yup.string().required('Visit type is required'),
   status: Yup.string().required('Status is required'),
@@ -26,6 +33,8 @@ const AddVisit = () => {
   const [facilities, setFacilities] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const navigate = useNavigate();
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -93,14 +102,21 @@ const AddVisit = () => {
     try {
       const cleanedValues = {
         ...values,
+        client_id: parseInt(values.client_id, 10),
+        site_id: parseInt(values.site_id, 10),
+        facility_id: values.facility_id
+          ? parseInt(values.facility_id, 10)
+          : null,
         description: values.description.trim(),
         created_by: currentUserId,
         date: selectedDate,
       };
+
       const { error } = await supabase.from('visits').insert([cleanedValues]);
       if (error) throw error;
+
       toast.success('Visit created successfully!');
-      resetForm();
+      navigate('/visit-list');
     } catch (error) {
       toast.error(`Error creating visit: ${error.message}`);
     } finally {
