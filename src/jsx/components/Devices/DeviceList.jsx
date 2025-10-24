@@ -174,7 +174,7 @@ const DeviceList = () => {
       Filter: ColumnFilter,
     },
     {
-      Header: 'Actions',
+      Header: '',
       accessor: 'actions',
       disableGlobalFilter: true,
       Cell: ({ row }) => (

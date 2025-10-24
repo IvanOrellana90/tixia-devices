@@ -23,7 +23,6 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
-
 const MobileList = () => {
   const [mobiles, setMobiles] = useState([]);
   const nav = useNavigate();
@@ -131,7 +130,7 @@ const MobileList = () => {
       ),
     },
     {
-      Header: 'Actions',
+      Header: '',
       accessor: 'actions',
       disableGlobalFilter: true,
       Cell: ({ row }) => (
