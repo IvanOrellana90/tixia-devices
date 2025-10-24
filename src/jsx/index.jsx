@@ -47,6 +47,7 @@ import DeviceInformationList from './components/Devices/DeviceInformationList';
 // Visit
 import AddVisit from './components/Visits/AddVisit';
 import VisitList from './components/Visits/VisitList';
+import EditVisit from './components/Visits/EditVisit';
 
 // User
 import UserList from './components/Users/UserList';
@@ -98,6 +99,7 @@ const Markup = () => {
     //Visit
     { url: 'add-visit', component: <AddVisit /> },
     { url: 'visit-list', component: <VisitList /> },
+    { url: 'edit-visit/:id', component: <EditVisit /> },
 
     //User
     { url: 'user-list', component: <UserList /> },
