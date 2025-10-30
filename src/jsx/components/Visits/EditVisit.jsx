@@ -9,6 +9,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import PageTitle from '../../layouts/PageTitle';
 import VisitTechniciansCard from './VisitTechniciansCard';
+import VisitDevicesCard from './VisitDevicesCard';
 
 // ✅ Validación Yup
 const visitSchema = Yup.object().shape({
@@ -353,6 +354,11 @@ const EditVisit = () => {
       <div className="row">
         <div className="col-lg-12">
           <VisitTechniciansCard visitId={id} />
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-lg-12">
+          <VisitDevicesCard visitId={id} />
         </div>
       </div>
     </Fragment>

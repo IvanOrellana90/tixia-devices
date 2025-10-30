@@ -60998,3 +60998,16 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 
 /*# sourceMappingURL=style.css.map */
+
+.fc-toolbar-title {
+  text-transform: lowercase !important;
+  font-weight: 200 !important;
+}
+
+.fc-toolbar-title::first-letter {
+  text-transform: uppercase !important;
+}
+
+.fc-event {
+  cursor: pointer !important;
+}
