@@ -9,9 +9,13 @@ import profile from '../../../assets/images/profile/pic1.jpg';
 import { ThemeContext } from '../../../context/ThemeContext';
 import { toast } from 'react-toastify';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faIdBadge } from '@fortawesome/free-solid-svg-icons';
+
 const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
   const { background, changeBackground } = useContext(ThemeContext);
   const [userEmail, setUserEmail] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   const navigate = useNavigate();
 
@@ -28,6 +32,22 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
 
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('email', userEmail)
+        .single();
+
+      setUserRole(userData?.role);
+    };
+
+    if (userEmail) {
+      fetchRole();
+    }
+  }, [userEmail]);
 
   const handleLogout = async () => {
     try {
@@ -111,8 +131,21 @@ const Header = ({ onNote, toggle, onProfile, onNotification, onClick }) => {
                     <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
                     <line x1="9" y1="9" x2="9.01" y2="9"></line>
                     <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                  </svg>{' '}
-                  {userEmail}
+                  </svg>
+
+                  {/* Email del usuario */}
+                  <span className="me-2">{userEmail}</span>
+
+                  {/* Badge solo visible si es admin */}
+                  {userRole === 'admin' && (
+                    <span
+                      className="badge rounded-pill bg-danger-light text-danger d-flex align-items-center border-danger"
+                      style={{ fontSize: '0.75rem' }}
+                    >
+                      <FontAwesomeIcon icon={faIdBadge} className="me-1" />
+                      Admin
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div

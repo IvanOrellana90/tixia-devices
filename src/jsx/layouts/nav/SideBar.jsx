@@ -3,6 +3,7 @@ import { Modal, Collapse } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { ThemeContext } from '../../../context/ThemeContext';
+import HRTrimmed from '../../components/common/HRTrimmed';
 
 import { MenuList } from './Menu';
 
@@ -75,6 +76,9 @@ const SideBar = () => {
         <ul className="metismenu" id="menu">
           {MenuList.map((data, index) => {
             let menuClass = data.classsChange;
+            if (data.type === 'divider') {
+              return <HRTrimmed key={index} />;
+            }
             if (menuClass === 'menu-title') {
               return (
                 <li className={menuClass} key={index}>
@@ -180,9 +184,7 @@ const SideBar = () => {
         </ul>
 
         <div className="copyright">
-          <p>
-            Ksec © {year} All Rights Reserved
-          </p>
+          <p>Ksec © {year} All Rights Reserved</p>
           <p className="op5">
             <span
               className="heart"

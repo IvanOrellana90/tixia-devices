@@ -44,6 +44,16 @@ import EditDevice from './components/Devices/EditDevice';
 import DeviceDetail from './components/Devices/DeviceDetail';
 import DeviceInformationList from './components/Devices/DeviceInformationList';
 
+// Visit
+import AddVisit from './components/Visits/AddVisit';
+import VisitList from './components/Visits/VisitList';
+import EditVisit from './components/Visits/EditVisit';
+import VisitCalendar from './components/Visits/VisitCalendar';
+
+// User
+import UserList from './components/Users/UserList';
+import EditUser from './components/Users/EditUser';
+
 // Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
@@ -86,6 +96,16 @@ const Markup = () => {
     { url: 'active-devices', component: <ActiveDevices /> },
     { url: 'inactive-devices', component: <InactiveDevices /> },
     { url: 'device-information', component: <DeviceInformationList /> },
+
+    //Visit
+    { url: 'add-visit', component: <AddVisit /> },
+    { url: 'visit-list', component: <VisitList /> },
+    { url: 'edit-visit/:id', component: <EditVisit /> },
+    { url: 'visit-calendar', component: <VisitCalendar /> },
+
+    //User
+    { url: 'user-list', component: <UserList /> },
+    { url: 'edit-user/:id', component: <EditUser /> },
   ];
 
   return (

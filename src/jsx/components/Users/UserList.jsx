@@ -6,10 +6,11 @@ import {
   useFilters,
   usePagination,
 } from 'react-table';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
+import { useNavigate } from 'react-router-dom';
 
+// 🔍 Filtro individual por columna
 const ColumnFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
   return (
@@ -23,110 +24,58 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
-const MobileList = () => {
-  const [mobiles, setMobiles] = useState([]);
+const UserList = () => {
+  const [users, setUsers] = useState([]);
   const nav = useNavigate();
 
+  // 🚀 Cargar usuarios desde Supabase
   useEffect(() => {
-    const fetchMobiles = async () => {
+    const fetchUsers = async () => {
       const { data, error } = await supabase
-        .from('mobiles')
-        .select(
-          'id, imei, model, has_sim_card, is_rented, active, devices(id, location, unique_id)'
-        );
-      if (error) throw error;
-      const mobilesNormalized = data.map((row) => {
-        const devicesValue = row.devices;
-        const device = Array.isArray(devicesValue)
-          ? devicesValue[0]
-          : devicesValue;
-        return {
-          ...row,
-          device_id: device?.id ?? null,
-          device_location: device?.location ?? '',
-          unique_id: device?.unique_id ?? '',
-        };
-      });
+        .from('users')
+        .select('id, email, first_name, last_name, phone, role');
 
-      setMobiles(mobilesNormalized);
+      if (error) {
+        console.error('Error fetching users:', error.message);
+      } else {
+        setUsers(data || []);
+      }
     };
-
-    fetchMobiles();
+    fetchUsers();
   }, []);
 
+  // 📋 Definición de columnas
   const COLUMNS = [
     {
-      Header: 'IMEI',
-      accessor: 'imei',
-      Filter: ColumnFilter,
-      Cell: ({ row }) => row.original.imei,
-    },
-    {
-      Header: 'Device',
-      accessor: 'device_location',
-      Filter: ColumnFilter,
-      Cell: ({ value, row }) => {
-        const id = row.original.device_id;
-        return id ? (
-          <a href={`/device/${id}`} className="text-primary">
-            {value || '(sin ubicación)'}
-          </a>
-        ) : (
-          <span className="text-muted">—</span>
-        );
-      },
-    },
-    {
-      Header: 'Unique ID',
-      accessor: 'unique_id',
+      Header: 'Email',
+      accessor: 'email',
       Filter: ColumnFilter,
     },
     {
-      Header: 'Model',
-      accessor: 'model',
+      Header: 'First Name',
+      accessor: 'first_name',
       Filter: ColumnFilter,
     },
     {
-      Header: 'SIM Card',
-      accessor: 'has_sim_card',
+      Header: 'Last Name',
+      accessor: 'last_name',
       Filter: ColumnFilter,
-      Cell: ({ value }) =>
-        value ? (
-          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-success bg-success-light dark:bg-[#21b7311a]">
-            Yes
-          </span>
-        ) : (
-          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-danger bg-danger-light dark:bg-[#ed34431a]">
-            No
-          </span>
-        ),
     },
     {
-      Header: 'Rented',
-      accessor: 'is_rented',
+      Header: 'Phone',
+      accessor: 'phone',
       Filter: ColumnFilter,
-      Cell: ({ value }) =>
-        value ? (
-          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-success bg-success-light dark:bg-[#21b7311a]">
-            Yes
-          </span>
-        ) : (
-          <span className="text-xs py-[5px] px-3 rounded-lg leading-[1.5] inline-block text-danger bg-danger-light dark:bg-[#ed34431a]">
-            No
-          </span>
-        ),
     },
     {
-      Header: 'State',
-      accessor: (row) => (row.active ? 'Active' : 'Inactive'),
+      Header: 'Role',
+      accessor: 'role',
       Filter: ColumnFilter,
       Cell: ({ value }) => (
-        <div className="d-flex align-items-center">
-          <i
-            className={`fa fa-circle me-2 ${value === 'Active' ? 'text-success' : 'text-danger'}`}
-          ></i>
-          {value}
-        </div>
+        <span
+          className={`badge ${value === 'admin' ? 'bg-primary-light text-primary dark border-primary' : 'bg-success-light text-success dark border-success border-success'}`}
+        >
+          {value ? value.charAt(0).toUpperCase() + value.slice(1) : 'Viewer'}
+        </span>
       ),
     },
     {
@@ -137,7 +86,7 @@ const MobileList = () => {
         <div className="d-flex">
           <button
             onClick={() => {
-              nav(`/edit-mobile/${row.original.id}`);
+              nav(`/edit-user/${row.original.id}`);
             }}
             className="btn btn-primary shadow btn-xs me-1"
           >
@@ -149,28 +98,11 @@ const MobileList = () => {
     },
   ];
 
+  // ⚙️ Configuración de react-table
   const columns = useMemo(() => COLUMNS, []);
-  const data = useMemo(() => mobiles, [mobiles]);
+  const data = useMemo(() => users, [users]);
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state,
-    setGlobalFilter,
-    page,
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    setPageSize,
-    state: { pageIndex, pageSize },
-  } = useTable(
+  const tableInstance = useTable(
     {
       columns,
       data,
@@ -182,16 +114,35 @@ const MobileList = () => {
     usePagination
   );
 
-  const { globalFilter } = state;
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page,
+    prepareRow,
+    state,
+    setGlobalFilter,
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+  } = tableInstance;
+
+  const { globalFilter, pageIndex, pageSize } = state;
 
   return (
     <>
-      <PageTitle activeMenu="Mobiles" motherMenu="Table" />
+      <PageTitle activeMenu="Users" motherMenu="Admin" />
       <div className="card">
         <div className="card-header">
-          <h4 className="card-title">Mobile Devices</h4>
+          <h4 className="card-title">User List</h4>
         </div>
         <div className="card-body">
+          {/* 🔍 Búsqueda global */}
           <div className="mb-3">
             <input
               type="text"
@@ -202,19 +153,23 @@ const MobileList = () => {
             />
           </div>
 
+          {/* 📋 Tabla */}
           <div className="table-responsive">
             <table {...getTableProps()} className="table table-striped">
               <thead>
                 {headerGroups.map((headerGroup) => {
-                  const { key, ...restHeaderGroupProps } =
+                  const { key: headerGroupKey, ...safeHeaderGroupProps } =
                     headerGroup.getHeaderGroupProps();
                   return (
-                    <tr key={key} {...restHeaderGroupProps}>
+                    <tr key={headerGroupKey} {...safeHeaderGroupProps}>
                       {headerGroup.headers.map((column) => {
-                        const { key: columnKey, ...restColumnProps } =
-                          column.getHeaderProps(column.getSortByToggleProps());
+                        const headerProps = column.getHeaderProps(
+                          column.getSortByToggleProps()
+                        );
+                        // 🔧 quitar key del spread
+                        const { key, ...safeHeaderProps } = headerProps;
                         return (
-                          <th key={columnKey} {...restColumnProps}>
+                          <th key={column.id} {...safeHeaderProps}>
                             {column.render('Header')}
                             <span className="ms-1">
                               {column.isSorted ? (
@@ -242,15 +197,16 @@ const MobileList = () => {
               <tbody {...getTableBodyProps()}>
                 {page.map((row) => {
                   prepareRow(row);
-                  const { key, ...restRowProps } = row.getRowProps();
+                  const rowProps = row.getRowProps();
+                  const { key, ...safeRowProps } = rowProps;
                   return (
-                    <tr key={key} {...restRowProps}>
+                    <tr key={row.original.id || row.id} {...safeRowProps}>
                       {row.cells.map((cell) => {
-                        const { key: cellKey, ...restCellProps } =
-                          cell.getCellProps();
+                        const cellProps = cell.getCellProps();
+                        const { key, ...safeCellProps } = cellProps;
                         return (
-                          <td key={cellKey} {...restCellProps}>
-                            {cell.render('Cell')}
+                          <td key={cell.column.id} {...safeCellProps}>
+                            {cell.render('Cell') || '-'}
                           </td>
                         );
                       })}
@@ -261,7 +217,8 @@ const MobileList = () => {
             </table>
           </div>
 
-          <div className="pagination mt-3">
+          {/* 📄 Paginación */}
+          <div className="pagination mt-3 d-flex align-items-center">
             <button
               onClick={() => gotoPage(0)}
               disabled={!canPreviousPage}
@@ -286,17 +243,18 @@ const MobileList = () => {
             <button
               onClick={() => gotoPage(pageCount - 1)}
               disabled={!canNextPage}
-              className="btn btn-primary me-2"
+              className="btn btn-primary me-3"
             >
               {'>>'}
             </button>
+
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="form-select ms-2"
+              className="form-select"
               style={{ width: 'auto' }}
             >
-              {[10, 50, 100, 200].map((size) => (
+              {[10, 25, 50, 100].map((size) => (
                 <option key={size} value={size}>
                   Show {size}
                 </option>
@@ -309,4 +267,4 @@ const MobileList = () => {
   );
 };
 
-export default MobileList;
+export default UserList;

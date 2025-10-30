@@ -163,7 +163,7 @@ const InactiveDevices = () => {
       Filter: ColumnFilter,
     },
     {
-      Header: 'Actions',
+      Header: '',
       accessor: 'actions',
       Cell: ({ row }) => (
         <div className="d-flex">
