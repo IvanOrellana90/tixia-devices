@@ -89,7 +89,7 @@ export const MenuList = [
       },
       {
         title: 'Facilities List',
-        to: 'facilities-list',
+        to: 'facility-list',
       },
     ],
   },
