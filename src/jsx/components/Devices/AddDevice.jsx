@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState, useMemo } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import PageTitle from '../../layouts/PageTitle';
 
 const deviceSchema = Yup.object().shape({
-  mobile_id: Yup.string(),
+  mobile_id: Yup.string().required('Mobile (IMEI) is required'),
   client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string().min(3).max(100).required('Location is required'),
@@ -26,6 +26,22 @@ const AddDevice = () => {
   const [sites, setSites] = useState([]);
   const [facilities, setFacilities] = useState([]);
   const [mobiles, setMobiles] = useState([]);
+
+  const [imeiSearch, setImeiSearch] = useState('');
+  const [isListVisible, setIsListVisible] = useState(false);
+
+  const filteredMobiles = useMemo(() => {
+    const searchTerm = imeiSearch.toLowerCase();
+    if (!searchTerm) {
+      return [];
+    }
+
+    return mobiles.filter(
+      (m) =>
+        m.imei.toLowerCase().includes(searchTerm) ||
+        (m.model && m.model.toLowerCase().includes(searchTerm))
+    );
+  }, [imeiSearch, mobiles]);
 
   useEffect(() => {
     (async () => {
@@ -148,23 +164,57 @@ const AddDevice = () => {
                     <div className="row">
                       {/* Mobile IMEI */}
                       <div className="col-lg-6 mb-2">
-                        <div className="form-group mb-3">
+                        <div
+                          className="form-group mb-3"
+                          style={{ position: 'relative' }}
+                        >
                           <label className="text-label">
                             Mobile (IMEI) <span className="required">*</span>
                           </label>
-                          <Field
-                            as="select"
-                            name="mobile_id"
+
+                          {/* Input de Búsqueda */}
+                          <input
+                            type="text"
                             className="form-control"
-                          >
-                            <option value="">Select IMEI</option>
-                            {mobiles.map((m) => (
-                              <option key={m.id} value={m.id}>
-                                {m.imei}
-                                {m.model ? ` [${m.model}]` : ''}
-                              </option>
-                            ))}
-                          </Field>
+                            value={imeiSearch}
+                            onChange={(e) => {
+                              setImeiSearch(e.target.value);
+                              setIsListVisible(true);
+                              if (values.mobile_id) {
+                                setFieldValue('mobile_id', '');
+                              }
+                            }}
+                            onFocus={() => setIsListVisible(true)}
+                            onBlur={() => {
+                              setTimeout(() => setIsListVisible(false), 200);
+                            }}
+                            placeholder="Search IMEI or Model"
+                          />
+
+                          {/* Lista de Resultados Filtrados */}
+                          {isListVisible && filteredMobiles.length > 0 && (
+                            <div className="list-group imei-search-list">
+                              {filteredMobiles.map((m) => (
+                                <button
+                                  type="button"
+                                  key={m.id}
+                                  className="list-group-item list-group-item-action"
+                                  onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    setFieldValue('mobile_id', m.id.toString());
+                                    setImeiSearch(
+                                      `${m.imei}${m.model ? ` [${m.model}]` : ''}`
+                                    );
+                                    setIsListVisible(false);
+                                  }}
+                                >
+                                  {m.imei}
+                                  {m.model ? ` [${m.model}]` : ''}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+
                           <ErrorMessage
                             name="mobile_id"
                             component="div"
