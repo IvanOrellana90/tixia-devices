@@ -702,3 +702,16 @@ button.react-calendar__tile.react-calendar__month-view__days__day:hover {
 .react-datepicker-wrapper {
   display: block !important;
 }
+
+.imei-search-list {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid #ced4da;
+  margin-top: 2px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+}
