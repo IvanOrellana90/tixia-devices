@@ -40,8 +40,10 @@ const Login = () => {
     validationSchema,
     onSubmit: async ({ email }) => {
       try {
+        const trimmedEmail = email.trim();
+
         const { error } = await supabase.auth.signInWithOtp({
-          email,
+          email: trimmedEmail,
           options: { emailRedirectTo: `${import.meta.env.VITE_URL}/` },
         });
 
@@ -55,9 +57,8 @@ const Login = () => {
           pauseOnHover: true,
         });
       } catch (error) {
+        console.error('Objeto de error de Supabase:', error);
         setError(error.message);
-
-        // Mostrar toast de error
         toast.error(`Error: ${error.message}`, {
           position: 'top-right',
           autoClose: 5000,
