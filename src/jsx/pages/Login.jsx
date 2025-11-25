@@ -40,10 +40,16 @@ const Login = () => {
     validationSchema,
     onSubmit: async ({ email }) => {
       try {
-        const trimmedEmail = email.trim();
+        const cleanEmail = email
+          .toLowerCase()
+          .trim()
+          .replace(/[\u200B-\u200D\uFEFF\u00A0\u2028\u2029]/g, '');
+
+        // Debug: Esto te mostrará en la consola del navegador exactamente qué estás enviando
+        console.log(`Enviando email: "${cleanEmail}" (Largo: ${cleanEmail.length})`);
 
         const { error } = await supabase.auth.signInWithOtp({
-          email: trimmedEmail,
+          email: cleanEmail,
           options: { emailRedirectTo: `${import.meta.env.VITE_URL}/` },
         });
 
