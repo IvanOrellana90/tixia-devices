@@ -9,6 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
+import RoleGuard from '../Auth/RoleGuard';
 
 const ColumnFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
@@ -135,6 +136,7 @@ const MobileList = () => {
       disableGlobalFilter: true,
       Cell: ({ row }) => (
         <div className="d-flex">
+          <RoleGuard allowedRoles={['admin']}>
           <button
             onClick={() => {
               nav(`/edit-mobile/${row.original.id}`);
@@ -143,6 +145,7 @@ const MobileList = () => {
           >
             <i className="fa fa-edit" />
           </button>
+          </RoleGuard>
         </div>
       ),
       disableFilters: true,

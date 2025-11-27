@@ -11,6 +11,7 @@ import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
+import RoleGuard from '../Auth/RoleGuard';
 
 // Componente para el filtro por columna
 const ColumnFilter = ({ column }) => {
@@ -180,6 +181,7 @@ const DeviceList = () => {
       Cell: ({ row }) => (
         <div className="d-flex">
           {/* Botón de editar */}
+          <RoleGuard allowedRoles={['admin']}>
           <button
             onClick={() => {
               // Redirigir a la página de edición con el ID del dispositivo
@@ -189,14 +191,17 @@ const DeviceList = () => {
           >
             <i className="fa fa-edit" />
           </button>
+          </RoleGuard>
 
           {/* Botón de eliminar */}
+          <RoleGuard allowedRoles={['admin']}>
           <button
             onClick={() => handleDelete(row.original)}
             className="btn btn-danger shadow btn-xs"
           >
             <i className="fa fa-trash" />
           </button>
+          </RoleGuard>
         </div>
       ),
       disableFilters: true,

@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { supabase } from '../supabase/client';
 import { toast } from 'react-toastify';
+// Importamos el hook
 import { useAuth } from '../../context/AuthContext';
 
 const validationSchema = Yup.object({
@@ -15,31 +16,28 @@ const validationSchema = Yup.object({
       'domain-check',
       'Solo se permiten correos @interkambio.cl',
       (value) => {
-        return value?.endsWith('@interkambio.cl');
+        return value?.endsWith('@interkambio.cl');    
       }
     ),
 });
 
 const Login = () => {
+  // 👇 AQUÍ ESTABA EL ERROR: Faltaba obtener user y loading del contexto
+  const { user, loading } = useAuth();
+  
   const [error, setError] = useState('');
   const nav = useNavigate();
 
+  // 1. Redirigir si ya hay sesión activa (Usando datos del Contexto)
   useEffect(() => {
     if (!loading && user) {
       nav('/');
     }
   }, [user, loading, nav]);
 
-  useEffect(() => {
-  const checkSession = async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      sessionStorage.setItem('user', JSON.stringify(data.session.user));
-      nav('/');
-    }
-  };
-  checkSession();
-}, [nav]);
+  // ❌ ELIMINADO: El segundo useEffect que llamaba a checkSession() manual.
+  // No es necesario porque el AuthContext ya maneja la sesión y el useEffect
+  // de arriba ya te redirige si detecta al usuario.
 
   const formik = useFormik({
     initialValues: { email: '' },
@@ -51,8 +49,7 @@ const Login = () => {
           .trim()
           .replace(/[\u200B-\u200D\uFEFF\u00A0\u2028\u2029]/g, '');
 
-        // Debug: Esto te mostrará en la consola del navegador exactamente qué estás enviando
-        console.log(`Enviando email: "${cleanEmail}" (Largo: ${cleanEmail.length})`);
+        console.log(`Enviando email: "${cleanEmail}"`);
 
         const { error } = await supabase.auth.signInWithOtp({
           email: cleanEmail,
@@ -61,7 +58,6 @@ const Login = () => {
 
         if (error) throw error;
 
-        // Mostrar toast de éxito
         toast.success('¡Revisa tu correo para el enlace de ingreso!', {
           position: 'top-right',
           autoClose: 5000,
@@ -69,17 +65,15 @@ const Login = () => {
           pauseOnHover: true,
         });
       } catch (error) {
-        console.error('Objeto de error de Supabase:', error);
+        console.error('Error Supabase:', error);
         setError(error.message);
-        toast.error(`Error: ${error.message}`, {
-          position: 'top-right',
-          autoClose: 5000,
-          closeOnClick: true,
-          pauseOnHover: true,
-        });
+        toast.error(`Error: ${error.message}`);
       }
     },
   });
+
+  // Si está cargando verificando sesión, mostramos spinner o nada
+  if (loading) return <div>Cargando...</div>;
 
   return (
     <div className="fix-wrapper">

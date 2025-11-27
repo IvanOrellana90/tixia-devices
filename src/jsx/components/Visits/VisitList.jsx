@@ -9,6 +9,7 @@ import {
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
+import RoleGuard from '../Auth/RoleGuard';
 
 // 🔍 Filtro individual por columna
 const ColumnFilter = ({ column }) => {
@@ -138,12 +139,14 @@ const VisitList = () => {
       disableGlobalFilter: true,
       Cell: ({ row }) => (
         <div className="d-flex">
-          <button
-            onClick={() => nav(`/edit-visit/${row.original.id}`)}
-            className="btn btn-primary shadow btn-xs me-1"
-          >
-            <i className="fa fa-edit" />
-          </button>
+          <RoleGuard allowedRoles={['admin']}>
+            <button
+              onClick={() => nav(`/edit-visit/${row.original.id}`)}
+              className="btn btn-primary shadow btn-xs me-1"
+            >
+              <i className="fa fa-edit" />
+            </button>
+          </RoleGuard>
         </div>
       ),
       disableFilters: true,
