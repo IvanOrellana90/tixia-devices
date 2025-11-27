@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { supabase } from '../supabase/client';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -24,16 +25,21 @@ const Login = () => {
   const nav = useNavigate();
 
   useEffect(() => {
-    // Comprobar si el usuario ya tiene una sesión activa
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        sessionStorage.setItem('user', JSON.stringify(data.session.user));
-        nav('/');
-      }
-    };
-    checkSession();
-  }, [nav]);
+    if (!loading && user) {
+      nav('/');
+    }
+  }, [user, loading, nav]);
+
+  useEffect(() => {
+  const checkSession = async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      sessionStorage.setItem('user', JSON.stringify(data.session.user));
+      nav('/');
+    }
+  };
+  checkSession();
+}, [nav]);
 
   const formik = useFormik({
     initialValues: { email: '' },

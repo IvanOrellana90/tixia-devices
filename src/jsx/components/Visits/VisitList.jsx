@@ -253,13 +253,21 @@ const VisitList = () => {
                   <tbody {...getTableBodyProps()}>
                     {page.map((row) => {
                       prepareRow(row);
+
+                      // Sacamos el key que genera react-table
+                      const { key: rowKey, ...rowProps } = row.getRowProps();
+
                       return (
-                        <tr key={row.original.id} {...row.getRowProps()}>
-                          {row.cells.map((cell) => (
-                            <td key={cell.column.id} {...cell.getCellProps()}>
-                              {cell.render('Cell')}
-                            </td>
-                          ))}
+                        <tr key={rowKey} {...rowProps}>
+                          {row.cells.map((cell) => {
+                            const { key: cellKey, ...cellProps } = cell.getCellProps();
+
+                            return (
+                              <td key={cellKey} {...cellProps}>
+                                {cell.render('Cell')}
+                              </td>
+                            );
+                          })}
                         </tr>
                       );
                     })}

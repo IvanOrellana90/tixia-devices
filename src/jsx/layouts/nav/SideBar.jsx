@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useReducer, useState } from 'react';
+import React, { useContext, useEffect, useReducer, useState, useMemo } from 'react';
 import { Modal, Collapse } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useScrollPosition } from '@n8tb1t/use-scroll-position';
 import { ThemeContext } from '../../../context/ThemeContext';
 import HRTrimmed from '../../components/common/HRTrimmed';
+import { useAuth } from '../../../context/AuthContext';
 
 import { MenuList } from './Menu';
 
@@ -21,6 +22,7 @@ const SideBar = () => {
   let year = new Date().getFullYear();
   const [state, setState] = useReducer(reducer, initialState);
   const { iconHover, ChangeIconSidebar } = useContext(ThemeContext);
+  const { role } = useAuth();
 
   // For scroll
   const [hideOnScroll, setHideOnScroll] = useState(true);
@@ -66,6 +68,46 @@ const SideBar = () => {
     });
   }, [path]);
 
+  const filteredMenuList = useMemo(() => {
+    // Si no hay rol cargado aún, podrías retornar vacío o la lista completa según prefieras
+    if (!role) return []; 
+
+    return MenuList.reduce((acc, item) => {
+      // A. Manejar Divisores
+      if (item.type === 'divider') {
+        acc.push(item);
+        return acc;
+      }
+
+      // B. Verificar permiso del padre (Item principal)
+      // Si el item tiene roles definidos y el usuario NO tiene ese rol, lo saltamos.
+      if (item.roles && !item.roles.includes(role)) {
+        return acc;
+      }
+
+      // C. Verificar hijos (Submenús)
+      if (item.content) {
+        // Filtramos los hijos que el usuario puede ver
+        const visibleChildren = item.content.filter(child => {
+          if (!child.roles) return true; // Si no tiene roles, es público
+          return child.roles.includes(role);
+        });
+
+        // Solo agregamos el padre si tiene hijos visibles
+        // (O si el padre NO tenía hijos originalmente pero era un link directo)
+        if (visibleChildren.length > 0) {
+          // Creamos una copia del item con los hijos filtrados
+          acc.push({ ...item, content: visibleChildren });
+        }
+      } else {
+        // D. Si no tiene hijos (es un link directo) y pasó el filtro B, lo agregamos
+        acc.push(item);
+      }
+
+      return acc;
+    }, []);
+  }, [role]);
+
   return (
     <div
       onMouseEnter={() => ChangeIconSidebar(true)}
@@ -74,7 +116,7 @@ const SideBar = () => {
     >
       <div className="deznav-scroll">
         <ul className="metismenu" id="menu">
-          {MenuList.map((data, index) => {
+          {filteredMenuList.map((data, index) => {
             let menuClass = data.classsChange;
             if (data.type === 'divider') {
               return <HRTrimmed key={index} />;
