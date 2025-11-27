@@ -1,26 +1,26 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
-import { supabase } from '../supabase/client';
+import { Navigate, Outlet } from 'react-router-dom'; // Importamos Navigate
+import { useAuth } from '../../context/AuthContext';
 
-const PrivateRoute = () => {
-  const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+// 1. Agregamos 'children' a los props
+const PrivateRoute = ({ allowedRoles = [], children }) => {
+  const { user, role, loading } = useAuth();
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        sessionStorage.setItem('user', JSON.stringify(data.user));
-        setIsAuthenticated(true);
-      } else {
-        sessionStorage.removeItem('user');
-        navigate('/page-login');
-      }
-    };
-    checkUser();
-  }, [navigate]);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-  return isAuthenticated ? <Outlet /> : null;
+  // 2. Si no hay usuario, redirigimos inmediatamente (Return temprano)
+  if (!user) {
+    return <Navigate to="/page-login" replace />;
+  }
+
+  // 3. Si hay roles definidos y el usuario no tiene permiso
+  if (allowedRoles.length > 0 && role && !allowedRoles.includes(role)) {
+    return <Navigate to="/page-error-503" replace />;
+  }
+
+  // 4. Si pasa las validaciones, renderiza children (si existe) u Outlet
+  return children ? children : <Outlet />;
 };
 
 export default PrivateRoute;

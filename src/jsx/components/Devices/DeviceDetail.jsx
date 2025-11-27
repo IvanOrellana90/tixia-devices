@@ -27,6 +27,7 @@ import { fetchNagiosStatus } from '../../services/nagiosService';
 import ServiceCard from './ServiceCard';
 import IconBubble from './IconBubble';
 import { getLastAccess } from '../../services/getLastAccess';
+import RoleGuard from '../Auth/RoleGuard';
 
 const DeviceDetail = () => {
   const { id } = useParams();
@@ -131,13 +132,15 @@ const DeviceDetail = () => {
           <strong>Mobile Association</strong>
           <div className="small mt-1">
             IMEI: <strong>{device.mobile.imei}</strong>
-            <br />
+            <RoleGuard allowedRoles={['admin']}>
+              <br />
             <button
               className="btn btn-sm btn-primary mt-2"
               onClick={() => setShowRemoveAlert(true)}
             >
               Remove Mobile
             </button>
+            </RoleGuard>
           </div>
         </div>
       );
@@ -534,12 +537,14 @@ const DeviceDetail = () => {
         <ServiceCard serviceName="RAM_USAGE" hostName={device?.location} />
         <ServiceCard serviceName="STORAGE_USAGE" hostName={device?.location} />
       </div>
-
+      
+      <RoleGuard allowedRoles={['admin']}>
       <div className="row">
         <div className="col-xl-12 col-xxl-12 col-sm-12">
           <DeviceConfigurationForm deviceId={id} />
         </div>
       </div>
+      </RoleGuard>
 
       <div className="row">
         <div className="col-md-12 col-xxl-6"></div>

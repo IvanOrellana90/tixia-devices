@@ -1,6 +1,4 @@
 import { Fragment, useContext } from 'react';
-
-// React router dom
 import { Routes, Route, Outlet } from 'react-router-dom';
 import PrivateRoute from './layouts/PrivateRoute';
 
@@ -57,6 +55,7 @@ import EditUser from './components/Users/EditUser';
 // Pages
 import Login from './pages/Login';
 import Error404 from './pages/Error404';
+import Error503 from './pages/Error503';
 import EditMobile from './components/Mobiles/EditMobile';
 
 const Markup = () => {
@@ -67,45 +66,45 @@ const Markup = () => {
     { url: 'dashboard-activity', component: <ActivityTab /> },
 
     //Clients
-    { url: 'add-client', component: <AddClient /> },
+    { url: 'add-client', component: <AddClient />, roles: ['admin']},
     { url: 'client-list', component: <ClientList /> },
     { url: 'clients', component: <ClientList /> },
 
     //Sites
-    { url: 'add-site', component: <AddSite /> },
+    { url: 'add-site', component: <AddSite />, roles: ['admin']},
     { url: 'site-list', component: <SiteList /> },
     { url: 'sites', component: <SiteList /> },
 
     //Facility
-    { url: 'add-facility', component: <AddFacility /> },
+    { url: 'add-facility', component: <AddFacility />, roles: ['admin'] },
     { url: 'facility-list', component: <FacilityList /> },
     { url: 'facilities', component: <FacilityList /> },
 
     //Mobile
-    { url: 'add-mobile', component: <AddMobile /> },
+    { url: 'add-mobile', component: <AddMobile />, roles: ['admin'] },
     { url: 'mobile-list', component: <MobileList /> },
     { url: 'mobiles', component: <MobileList /> },
-    { url: 'edit-mobile/:id', component: <EditMobile /> },
+    { url: 'edit-mobile/:id', component: <EditMobile />, roles: ['admin'] },
 
     //Device
-    { url: 'add-device', component: <AddDevice /> },
+    { url: 'add-device', component: <AddDevice />, roles: ['admin'] },
     { url: 'device-list', component: <DeviceList /> },
     { url: 'devices', component: <DeviceList /> },
-    { url: 'edit-device/:id', component: <EditDevice /> },
+    { url: 'edit-device/:id', component: <EditDevice />, roles: ['admin'] },
     { url: 'device/:id', component: <DeviceDetail /> },
     { url: 'active-devices', component: <ActiveDevices /> },
     { url: 'inactive-devices', component: <InactiveDevices /> },
     { url: 'device-information', component: <DeviceInformationList /> },
 
     //Visit
-    { url: 'add-visit', component: <AddVisit /> },
+    { url: 'add-visit', component: <AddVisit />, roles: ['admin'] },
     { url: 'visit-list', component: <VisitList /> },
-    { url: 'edit-visit/:id', component: <EditVisit /> },
+    { url: 'edit-visit/:id', component: <EditVisit />, roles: ['admin'] },
     { url: 'visit-calendar', component: <VisitCalendar /> },
 
     //User
-    { url: 'user-list', component: <UserList /> },
-    { url: 'edit-user/:id', component: <EditUser /> },
+    { url: 'user-list', component: <UserList />, roles: ['admin'] },
+    { url: 'edit-user/:id', component: <EditUser />, roles: ['admin'] },
   ];
 
   return (
@@ -114,21 +113,38 @@ const Markup = () => {
         {/* Rutas públicas */}
         <Route path="page-login" element={<Login />} />
         <Route path="page-error-404" element={<Error404 />} />
+        <Route path="page-error-503" element={<Error503 />} />
 
-        {/* Rutas protegidas */}
+        {/* Rutas Protegidas */}
+        {/* Nivel 1: PrivateRoute verifica si el usuario está LOGUEADO */}
         <Route element={<PrivateRoute />}>
+          
+          {/* Layout 2: Sin Sidebar completa (Overview) */}
           <Route element={<MainLayout2 />}>
             <Route path="/" element={<Overview />} />
           </Route>
+
+          {/* Layout Principal: Con Sidebar y Nav */}
           <Route element={<MainLayout />}>
-            {allroutes.map((data, i) => (
-              <Route
-                key={i}
-                exact
-                path={`${data.url}`}
-                element={data.component}
-              />
-            ))}
+            {allroutes.map((route, i) => {
+              return (
+                <Route
+                  key={i}
+                  path={route.url}
+                  element={
+                    // Nivel 2: Verificación de ROLES específica para esta ruta
+                    route.roles ? (
+                      <PrivateRoute allowedRoles={route.roles}>
+                        {route.component}
+                      </PrivateRoute>
+                    ) : (
+                      // Si no hay roles específicos, renderiza directo
+                      route.component
+                    )
+                  }
+                />
+              );
+            })}
           </Route>
         </Route>
 

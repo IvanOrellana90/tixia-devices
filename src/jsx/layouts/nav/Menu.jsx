@@ -14,6 +14,7 @@ export const MenuList = [
       {
         title: 'Add Device',
         to: 'add-device',
+        roles: ['admin'],
       },
       {
         title: 'Device List',
@@ -35,6 +36,7 @@ export const MenuList = [
       {
         title: 'Add Mobile',
         to: 'add-mobile',
+        roles: ['admin'],
       },
       {
         title: 'Mobile List',
@@ -52,6 +54,7 @@ export const MenuList = [
       {
         title: 'Add Client',
         to: 'add-client',
+        roles: ['admin'],
       },
       {
         title: 'Client List',
@@ -69,6 +72,7 @@ export const MenuList = [
       {
         title: 'Add Site',
         to: 'add-site',
+        roles: ['admin'],
       },
       {
         title: 'Site List',
@@ -86,6 +90,7 @@ export const MenuList = [
       {
         title: 'Add Facility',
         to: 'add-facility',
+        roles: ['admin'],
       },
       {
         title: 'Facilities List',
@@ -102,7 +107,7 @@ export const MenuList = [
     classsChange: 'mm-collapse',
     iconStyle: <i className="flaticon-381-calendar-7" />,
     content: [
-      { title: 'Add Visit', to: 'add-visit' },
+      { title: 'Add Visit', to: 'add-visit', roles: ['admin'] },
       { title: 'Visit List', to: 'visit-list' },
       { title: 'Visit Calendar', to: 'visit-calendar' },
     ],
@@ -112,6 +117,7 @@ export const MenuList = [
     title: 'Users',
     classsChange: 'mm-collapse',
     iconStyle: <i className="flaticon-381-user-7" />,
+    roles: ['admin'],
     content: [
       {
         title: 'User List',
