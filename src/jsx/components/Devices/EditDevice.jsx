@@ -7,7 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 const deviceSchema = Yup.object().shape({
-  mobile_id: Yup.string().required('Mobile (IMEI) is required'),
+  mobile_id: Yup.string().nullable(),
   client_id: Yup.string().required('Client ID is required'),
   site_ksec_id: Yup.string().required('Site KSEC ID is required'),
   location: Yup.string()
@@ -20,7 +20,7 @@ const deviceSchema = Yup.object().shape({
   unique_id: Yup.string()
     .trim()
     .max(128, 'Max 128 characters')
-    .required('Unique ID is required'),
+    .nullable(),
 });
 
 const EditDevice = () => {
@@ -209,7 +209,7 @@ const EditDevice = () => {
                             style={{ position: 'relative' }}
                           >
                             <label className="text-label">
-                              Mobile (IMEI) <span className="required">*</span>
+                              Mobile (IMEI)
                             </label>
 
                             {/* Input de Búsqueda */}
