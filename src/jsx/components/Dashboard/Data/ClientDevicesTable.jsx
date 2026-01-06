@@ -147,7 +147,7 @@ export default function ClientDevicesTable({ clients, devices }) {
           <tbody>
             {sortedStats.map((stat) => (
               <tr key={stat.id}>
-                <td>{stat.name}</td>
+                <td><a href={`/client/${stat.id}`} className="link-primary">{stat.name}</a></td>
                 <td className="text-center">{stat.pda}</td>
                 <td className="text-center">{stat.kiosk}</td>
                 <td className="text-center">{stat.tourniquet}</td>

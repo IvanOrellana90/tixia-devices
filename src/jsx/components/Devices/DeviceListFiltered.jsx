@@ -7,7 +7,6 @@ import {
   usePagination,
 } from 'react-table';
 import { supabase } from '../../supabase/client';
-import PageTitle from '../../layouts/PageTitle';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as XLSX from 'xlsx';
@@ -26,16 +25,19 @@ const ColumnFilter = ({ column }) => {
   );
 };
 
-const DeviceList = () => {
+// Componente Reutilizable
+const DeviceListFiltered = ({ filter = {}, clientName }) => {
   const [devices, setDevices] = useState([]);
-  const [showAlert, setShowAlert] = useState(false); // Controla la visibilidad de la alerta
-  const [locationInput, setLocationInput] = useState(''); // Almacena el location ingresado
-  const [deviceToDelete, setDeviceToDelete] = useState(null); // Almacena el dispositivo a eliminar
+  // eslint-disable-next-line no-unused-vars
+  const [locationInput, setLocationInput] = useState('');
+  // eslint-disable-next-line no-unused-vars
+  const [deviceToDelete, setDeviceToDelete] = useState(null);
   const nav = useNavigate();
 
   useEffect(() => {
     const fetchDevices = async () => {
-      const { data, error } = await supabase
+      // 1. Iniciamos la consulta base
+      let query = supabase
         .from('devices')
         .select(
           `
@@ -55,11 +57,27 @@ const DeviceList = () => {
               configuration
             )
           `
-        )
-        .order('activated_at', { ascending: false });
+        );
+
+      // 2. Aplicamos filtros dinámicos si existen en los props
+      if (filter.clientId) {
+        query = query.eq('client_id', filter.clientId);
+      }
+
+      if (filter.siteId) {
+        query = query.eq('site_id', filter.siteId);
+      }
+
+      if (filter.facilityId) {
+        query = query.eq('facility_id', filter.facilityId);
+      }
+
+      // 3. Ordenamos y ejecutamos
+      const { data, error } = await query.order('activated_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching devices:', error.message);
+        toast.error('Error loading devices');
       } else {
         const devicesWithNames = data.map((device) => ({
           ...device,
@@ -77,47 +95,9 @@ const DeviceList = () => {
     };
 
     fetchDevices();
-  }, []);
 
-  const handleDelete = (device) => {
-    setDeviceToDelete(device); // Guardar el dispositivo a eliminar
-    setShowAlert(true); // Mostrar la alerta
-  };
+  }, [filter.clientId, filter.siteId, filter.facilityId]);
 
-  const confirmDelete = async () => {
-    if (locationInput === deviceToDelete.location) {
-      try {
-        const { error } = await supabase
-          .from('devices')
-          .delete()
-          .eq('id', deviceToDelete.id);
-
-        if (error) {
-          throw error;
-        }
-
-        // Actualizar el estado local eliminando el dispositivo
-        setDevices((prevDevices) =>
-          prevDevices.filter((device) => device.id !== deviceToDelete.id)
-        );
-
-        // Mostrar mensaje de éxito
-        toast.success('Device deleted successfully!');
-      } catch (error) {
-        console.error('Error deleting device:', error.message);
-        toast.error('Error deleting device.');
-      }
-    } else {
-      toast.error('Incorrect location. Deletion canceled.');
-    }
-
-    // Cerrar la alerta y resetear los estados
-    setShowAlert(false);
-    setLocationInput('');
-    setDeviceToDelete(null);
-  };
-
-  // Definición de columnas
   const COLUMNS = [
     {
       Header: 'Location',
@@ -148,11 +128,6 @@ const DeviceList = () => {
       Filter: ColumnFilter,
     },
     {
-      Header: 'Client',
-      accessor: 'client_name',
-      Filter: ColumnFilter,
-    },
-    {
       Header: 'Site',
       accessor: 'site_name',
       Filter: ColumnFilter,
@@ -162,7 +137,6 @@ const DeviceList = () => {
       accessor: 'facility_name',
       Filter: ColumnFilter,
     },
-
     {
       Header: 'Mode',
       accessor: 'mode',
@@ -173,59 +147,27 @@ const DeviceList = () => {
       accessor: 'version_name',
       Filter: ColumnFilter,
     },
-    {
-      Header: '',
-      accessor: 'actions',
-      disableGlobalFilter: true,
-      Cell: ({ row }) => (
-        <div className="d-flex">
-          {/* Botón de editar */}
-          <button
-            onClick={() => {
-              // Redirigir a la página de edición con el ID del dispositivo
-              nav(`/edit-device/${row.original.id}`);
-            }}
-            className="btn btn-primary shadow btn-xs me-1"
-          >
-            <i className="fa fa-edit" />
-          </button>
-
-          {/* Botón de eliminar */}
-          <button
-            onClick={() => handleDelete(row.original)}
-            className="btn btn-danger shadow btn-xs"
-          >
-            <i className="fa fa-trash" />
-          </button>
-        </div>
-      ),
-      disableFilters: true,
-    },
   ];
 
   const columns = useMemo(() => COLUMNS, []);
   const data = useMemo(() => devices, [devices]);
 
-  // Configuración de react-table
   const {
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    footerGroups,
-    rows,
+    page,
     prepareRow,
     state,
     setGlobalFilter,
-    page, // Página actual
-    canPreviousPage, // ¿Se puede retroceder a la página anterior?
-    canNextPage, // ¿Se puede avanzar a la página siguiente?
-    pageOptions, // Opciones de página (número total de páginas)
-    pageCount, // Número total de páginas
-    gotoPage, // Ir a una página específica
-    nextPage, // Ir a la página siguiente
-    previousPage, // Ir a la página anterior
-    setPageSize, // Cambiar el tamaño de la página
-    state: { pageIndex, pageSize }, // Estado de la paginación
+    canPreviousPage,
+    canNextPage,
+    pageCount,
+    gotoPage,
+    nextPage,
+    previousPage,
+    setPageSize,
+    state: { pageSize },
   } = useTable(
     {
       columns,
@@ -250,7 +192,7 @@ const DeviceList = () => {
   const { globalFilter } = state;
 
   const exportToExcel = () => {
-    const fileName = 'devices_export_' + new Date().toISOString();
+    const fileName = clientName + '_devices_export_' + new Date().toISOString();
     const exportData = data.map((row) => ({
       Location: row.location,
       Mode: row.mode,
@@ -278,7 +220,6 @@ const DeviceList = () => {
       };
     });
 
-    // Crear una hoja de cálculo
     const workbook = XLSX.utils.book_new();
     const worksheetDevices = XLSX.utils.json_to_sheet(exportData);
     const worksheetConfigs = XLSX.utils.json_to_sheet(configData);
@@ -291,40 +232,6 @@ const DeviceList = () => {
 
   return (
     <>
-      <PageTitle activeMenu="Devices" motherMenu="Table" />
-      {/* Alerta de confirmación */}
-      {showAlert && (
-        <div
-          role="alert"
-          className="fade notification alert alert-danger show mb-4"
-        >
-          <p className="notification-title mb-2">
-            <strong>Confirm Deletion</strong>
-          </p>
-          <p>Please enter the location of the device to confirm deletion:</p>
-          <input
-            type="text"
-            value={locationInput}
-            onChange={(e) => setLocationInput(e.target.value)}
-            className="form-control mb-2"
-            placeholder="Enter location"
-          />
-          <button
-            type="button"
-            onClick={confirmDelete}
-            className="btn btn-danger btn-sm me-2"
-          >
-            Confirm
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowAlert(false)}
-            className="btn btn-link btn-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
       <div className="card">
         <div className="card-header">
           <h4 className="card-title">Device List</h4>
@@ -344,32 +251,20 @@ const DeviceList = () => {
             <table {...getTableProps()} className="table table-striped">
               <thead>
                 {headerGroups.map((headerGroup) => {
-                  const { key, ...restHeaderGroupProps } =
-                    headerGroup.getHeaderGroupProps();
+                  // 1. CORRECCIÓN AQUÍ: Header Groups
+                  const { key: headerGroupKey, ...restHeaderGroupProps } = headerGroup.getHeaderGroupProps();
                   return (
-                    <tr key={key} {...restHeaderGroupProps}>
+                    <tr key={headerGroupKey} {...restHeaderGroupProps}>
                       {headerGroup.headers.map((column) => {
-                        const { key: columnKey, ...restColumnProps } =
-                          column.getHeaderProps(column.getSortByToggleProps());
+                        // 2. CORRECCIÓN AQUÍ: Column Headers
+                        const { key: colKey, ...restColumnProps } = column.getHeaderProps(column.getSortByToggleProps());
                         return (
-                          <th key={columnKey} {...restColumnProps}>
+                          <th key={colKey} {...restColumnProps}>
                             {column.render('Header')}
                             <span className="ms-1">
-                              {column.isSorted ? (
-                                column.isSortedDesc ? (
-                                  <i className="fa fa-arrow-down" />
-                                ) : (
-                                  <i className="fa fa-arrow-up" />
-                                )
-                              ) : (
-                                ''
-                              )}
+                              {column.isSorted ? (column.isSortedDesc ? <i className="fa fa-arrow-down" /> : <i className="fa fa-arrow-up" />) : ''}
                             </span>
-                            <div>
-                              {column.canFilter
-                                ? column.render('Filter')
-                                : null}
-                            </div>
+                            <div>{column.canFilter ? column.render('Filter') : null}</div>
                           </th>
                         );
                       })}
@@ -380,16 +275,15 @@ const DeviceList = () => {
               <tbody {...getTableBodyProps()}>
                 {page.map((row) => {
                   prepareRow(row);
-                  const { key, ...restRowProps } = row.getRowProps();
+                  // 3. CORRECCIÓN AQUÍ: Filas del cuerpo (Body Rows)
+                  const { key: rowKey, ...restRowProps } = row.getRowProps();
                   return (
-                    <tr key={key} {...restRowProps}>
+                    <tr key={rowKey} {...restRowProps}>
                       {row.cells.map((cell) => {
-                        const { key: cellKey, ...restCellProps } =
-                          cell.getCellProps();
+                        // 4. CORRECCIÓN AQUÍ: Celdas (Body Cells)
+                        const { key: cellKey, ...restCellProps } = cell.getCellProps();
                         return (
-                          <td key={cellKey} {...restCellProps}>
-                            {cell.render('Cell')}
-                          </td>
+                          <td key={cellKey} {...restCellProps}>{cell.render('Cell')}</td>
                         );
                       })}
                     </tr>
@@ -398,37 +292,13 @@ const DeviceList = () => {
               </tbody>
             </table>
           </div>
-          {/* Controles de paginación */}
+
           <div className="d-flex justify-content-between align-items-center mt-3">
             <div className="pagination">
-              <button
-                onClick={() => gotoPage(0)}
-                disabled={!canPreviousPage}
-                className="btn btn-primary me-2"
-              >
-                {'<<'}
-              </button>
-              <button
-                onClick={() => previousPage()}
-                disabled={!canPreviousPage}
-                className="btn btn-primary me-2"
-              >
-                {'<'}
-              </button>
-              <button
-                onClick={() => nextPage()}
-                disabled={!canNextPage}
-                className="btn btn-primary me-2"
-              >
-                {'>'}
-              </button>
-              <button
-                onClick={() => gotoPage(pageCount - 1)}
-                disabled={!canNextPage}
-                className="btn btn-primary me-2"
-              >
-                {'>>'}
-              </button>
+              <button onClick={() => gotoPage(0)} disabled={!canPreviousPage} className="btn btn-primary me-2">{'<<'}</button>
+              <button onClick={() => previousPage()} disabled={!canPreviousPage} className="btn btn-primary me-2">{'<'}</button>
+              <button onClick={() => nextPage()} disabled={!canNextPage} className="btn btn-primary me-2">{'>'}</button>
+              <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage} className="btn btn-primary me-2">{'>>'}</button>
               <select
                 value={pageSize}
                 onChange={(e) => setPageSize(Number(e.target.value))}
@@ -436,19 +306,11 @@ const DeviceList = () => {
                 style={{ width: 'auto' }}
               >
                 {[10, 50, 100, 200].map((size) => (
-                  <option key={size} value={size}>
-                    Show {size}
-                  </option>
+                  <option key={size} value={size}>Show {size}</option>
                 ))}
               </select>
             </div>
-            {/* Botón de exportación a Excel */}
-            <button
-              onClick={exportToExcel}
-              className="me-1 btn btn-outline-success btn-rounded btn-sm"
-            >
-              Excel
-            </button>
+            <button onClick={exportToExcel} className="me-1 btn btn-outline-success btn-rounded btn-sm">Excel</button>
           </div>
         </div>
       </div>
@@ -456,4 +318,4 @@ const DeviceList = () => {
   );
 };
 
-export default DeviceList;
+export default DeviceListFiltered;
