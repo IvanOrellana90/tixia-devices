@@ -9,21 +9,25 @@ const OverviewTab = ({ devices, clients }) => {
   }
 
   return (
-    <div className="row">
-      <div className="col-md-12 col-xl-4">
-        {/* Donut chart con animación */}
-        <DevicesByModeChart devices={devices} />
+    <> 
+      <div className="row align-items-start">
+        <div className="col-md-12 col-xl-4">
+          <DevicesByModeChart devices={devices} />
+        </div>
+        <div className="col-md-12 col-xl-8">
+          <ClientDevicesTable clients={clients} devices={devices} />
+        </div>
       </div>
-      <div className="col-md-12 col-xl-8">
-        <ClientDevicesTable clients={clients} devices={devices} />
+      
+      <div className="row align-items-start">
+        <div className="col-md-12 col-xl-8">
+          <TagsListCard />
+        </div>
+        <div className="col-xl-4 col-md-12">
+          <DevicesByVersionChart />
+        </div>
       </div>
-      <div className="col-md-12 col-xl-8">
-        <TagsListCard />
-      </div>
-      <div className="col-xl-4 col-md-12">
-        <DevicesByVersionChart />
-      </div>
-    </div>
+    </> 
   );
 };
 

@@ -38,6 +38,19 @@ const isAllowed = (resultId) => {
 
 // Group results by range (12m monthly, 30d/7d daily)
 const processMetricsData = (rows, range) => {
+
+  const RESULT_LABELS = {
+  1: 'Authorized',
+  2: 'Out of hours',
+  3: 'Not authorized',
+  4: 'Blocked',
+  5: 'Authorized on-site',
+  6: 'Double shift',
+  };
+
+  const isAllowed = (resultId) => [1, 5].includes(Number(resultId));
+  const isDenied = (resultId) => [3, 4].includes(Number(resultId));
+
   const buckets = new Map();
 
   for (const r of rows) {
@@ -66,6 +79,7 @@ const processMetricsData = (rows, range) => {
         total: 0,
         allowed: 0,
         denied: 0,
+        other: 0,
         fullDate: fullDateForSort,
       });
     }
@@ -73,11 +87,13 @@ const processMetricsData = (rows, range) => {
     const b = buckets.get(key);
 
     const events = Number(r.total_events || 0);
-    const rId = r.result_id;
+    const rId = Number(r.result_id);
 
     b.total += events;
+
     if (isAllowed(rId)) b.allowed += events;
-    else b.denied += events;
+    else if (isDenied(rId)) b.denied += events;
+    else b.other += events;
   }
 
   const result = Array.from(buckets.values()).sort(
@@ -86,9 +102,12 @@ const processMetricsData = (rows, range) => {
 
   return result.map((item) => ({
     ...item,
-    name: range === '12months' ? formatMonthLabel(item.name) : formatDayLabel(item.name),
+    name: range === '12months'
+      ? formatMonthLabel(item.name)
+      : formatDayLabel(item.name),
   }));
 };
+
 
 const getLookbackDays = (range) => {
   if (range === '12months') return 365;
@@ -139,13 +158,14 @@ const ClientAccessChart = ({ clientDb }) => {
   }, [clientDb, timeRange, lookbackDays]);
 
   const tooltipFormatter = (value, name) => {
-    const labels = { total: 'Total', allowed: 'Allowed', denied: 'Denied' };
+    const labels = { total: 'Total', allowed: 'Allowed', denied: 'Denied', other: 'Other' };
     return [value, labels[name] || name];
   };
 
+
   return (
     <div className="row">
-      <div className="col-xl-8 col-xxl-8 col-md-12">
+      <div className="col-xl-12 col-xxl-12 col-sm-12">
         <div className="card">
           <div className="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h4 className="card-title mb-0">Access</h4>
@@ -204,6 +224,7 @@ const ClientAccessChart = ({ clientDb }) => {
                     <Line type="monotone" dataKey="total" stroke="#8884d8" activeDot={{ r: 8 }} name="Total" />
                     <Line type="monotone" dataKey="allowed" stroke="#82ca9d" name="Allowed" />
                     <Line type="monotone" dataKey="denied" stroke="#ff8042" name="Denied" />
+                    <Line type="monotone" dataKey="other" stroke="#999999" name="Other" />
                   </LineChart>
                 </ResponsiveContainer>
               )}
