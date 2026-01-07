@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   useTable,
   useSortBy,
@@ -29,6 +30,11 @@ const COLUMNS = [
     Header: 'Name',
     accessor: 'name', // Accede a la propiedad "name" de cada cliente
     Filter: ColumnFilter, // Filtro por columna
+    Cell: ({ row }) => (
+      <Link to={`/client/${row.original.id}`} className="text-primary">
+        {row.original.name}
+      </Link>
+    ),
   },
   {
     Header: 'URL',
@@ -55,7 +61,7 @@ const ClientList = () => {
     const fetchClients = async () => {
       const { data, error } = await supabase
         .from('clients')
-        .select('name, url'); // Seleccionar todas las columnas de la tabla "clients"
+        .select('id, name, url'); // Seleccionar todas las columnas de la tabla "clients"
 
       if (error) {
         console.error('Error fetching clients:', error.message);

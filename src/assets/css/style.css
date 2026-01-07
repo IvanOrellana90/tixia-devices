@@ -50168,17 +50168,25 @@ div:where(.swal2-container) div:where(.swal2-popup) {
   color: #7e7e7e;
 }
 
-.bg-pda {
+.bg-pda, .bg-read {
   background-color: #8884D8 !important;
 }
-
-.bg-kiosk {
+.bg-kiosk, .bg-manual {
   background-color: #82CA9D !important;
 }
-
-.bg-tourniquet {
+.bg-tourniquet, .bg-chip {
   background-color: #FF8042 !important;
 }
+.bg-qr {
+  background-color: #008FFB !important;
+}
+.bg-integration {
+  background-color: #00E396 !important;
+}
+.bg-digitized {
+  background-color: #999999 !important;
+}
+
 .badge-xs {
   padding: 0px 8px;
   line-height: 14px;

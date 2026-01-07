@@ -255,7 +255,7 @@ const DeviceList = () => {
   const { globalFilter } = state;
 
   const exportToExcel = () => {
-    const fileName = 'devices_export';
+    const fileName = 'devices_export_' + new Date().toISOString();
     const exportData = data.map((row) => ({
       Location: row.location,
       Mode: row.mode,

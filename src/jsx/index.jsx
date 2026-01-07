@@ -20,6 +20,7 @@ import ActivityTab from './components/Dashboard/Tabs/ActivityTab';
 // Client
 import AddClient from './components/Clients/AddClient';
 import ClientList from './components/Clients/ClientList';
+import ClientDetail from './components/Clients/ClientDetail';
 
 // Sites
 import AddSite from './components/Sites/AddSite';
@@ -69,6 +70,7 @@ const Markup = () => {
     { url: 'add-client', component: <AddClient />, roles: ['admin']},
     { url: 'client-list', component: <ClientList /> },
     { url: 'clients', component: <ClientList /> },
+    { url: 'client/:id', component: <ClientDetail /> },
 
     //Sites
     { url: 'add-site', component: <AddSite />, roles: ['admin']},

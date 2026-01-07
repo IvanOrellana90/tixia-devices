@@ -17,28 +17,18 @@ export default function ClientDevicesTable({ clients, devices }) {
       }
 
       const grandTotal = devices.length;
-      const totalPda = devices.filter(
-        (d) => d.mode?.toLowerCase() === 'pda'
-      ).length;
-      const totalKiosk = devices.filter(
-        (d) => d.mode?.toLowerCase() === 'kiosk'
-      ).length;
-      const totalTourniquet = devices.filter(
-        (d) => d.mode?.toLowerCase() === 'tourniquet'
-      ).length;
+      const totalPda = devices.filter((d) => d.mode?.toLowerCase() === 'pda').length;
+      const totalKiosk = devices.filter((d) => d.mode?.toLowerCase() === 'kiosk').length;
+      const totalTourniquet = devices.filter((d) => d.mode?.toLowerCase() === 'tourniquet').length;
 
       const clientStats = clients.map((client) => {
         const clientDevices = devices.filter((d) => d.client_id === client.id);
+
         const total = clientDevices.length;
-        const pda = clientDevices.filter(
-          (d) => d.mode?.toLowerCase() === 'pda'
-        ).length;
-        const kiosk = clientDevices.filter(
-          (d) => d.mode?.toLowerCase() === 'kiosk'
-        ).length;
-        const tourniquet = clientDevices.filter(
-          (d) => d.mode?.toLowerCase() === 'tourniquet'
-        ).length;
+        const pda = clientDevices.filter((d) => d.mode?.toLowerCase() === 'pda').length;
+        const kiosk = clientDevices.filter((d) => d.mode?.toLowerCase() === 'kiosk').length;
+        const tourniquet = clientDevices.filter((d) => d.mode?.toLowerCase() === 'tourniquet').length;
+
         const percentage =
           grandTotal > 0 ? Number(((total / grandTotal) * 100).toFixed(1)) : 0;
 
@@ -65,7 +55,6 @@ export default function ClientDevicesTable({ clients, devices }) {
       const va = a[key];
       const vb = b[key];
 
-      // texto vs número
       if (typeof va === 'string' || typeof vb === 'string') {
         const comp = String(va ?? '').localeCompare(String(vb ?? ''), 'es', {
           sensitivity: 'base',
@@ -97,49 +86,39 @@ export default function ClientDevicesTable({ clients, devices }) {
       <div className="card-header">
         <h4 className="text-black mb-0">Devices by Client</h4>
       </div>
+
       <div className="card-body">
-        <Table
-          responsive
-          striped
-          hover
-          className="table-responsive-sm align-middle"
-        >
+        <Table responsive striped hover className="table-responsive-sm align-middle">
           <thead>
             <tr>
-              <th
-                role="button"
-                className="user-select-none"
-                onClick={() => handleSort('name')}
-              >
+              <th role="button" className="user-select-none" onClick={() => handleSort('name')}>
                 Client{sortIndicator('name')}
               </th>
-              <th
-                role="button"
-                className="text-center user-select-none"
-                onClick={() => handleSort('pda')}
-              >
+
+              <th role="button" className="text-center user-select-none" onClick={() => handleSort('pda')}>
                 PDA{sortIndicator('pda')}
               </th>
-              <th
-                role="button"
-                className="text-center user-select-none"
-                onClick={() => handleSort('kiosk')}
-              >
+
+              <th role="button" className="text-center user-select-none" onClick={() => handleSort('kiosk')}>
                 KKO{sortIndicator('kiosk')}
               </th>
-              <th
-                role="button"
-                className="text-center user-select-none"
-                onClick={() => handleSort('tourniquet')}
-              >
+
+              <th role="button" className="text-center user-select-none" onClick={() => handleSort('tourniquet')}>
                 TOR{sortIndicator('tourniquet')}
               </th>
+
+              <th role="button" className="text-center user-select-none" onClick={() => handleSort('total')}>
+                Total{sortIndicator('total')}
+              </th>
+
+              {/* ✅ Nueva columna separada */}
               <th
                 role="button"
                 className="text-center user-select-none"
-                onClick={() => handleSort('total')}
+                onClick={() => handleSort('percentage')}
+                title="% of all devices"
               >
-                Total{sortIndicator('total')}
+                %{sortIndicator('percentage')}
               </th>
             </tr>
           </thead>
@@ -147,22 +126,35 @@ export default function ClientDevicesTable({ clients, devices }) {
           <tbody>
             {sortedStats.map((stat) => (
               <tr key={stat.id}>
-                <td>{stat.name}</td>
+                <td>
+                  <a href={`/client/${stat.id}`} className="link-primary">
+                    {stat.name}
+                  </a>
+                </td>
+
                 <td className="text-center">{stat.pda}</td>
                 <td className="text-center">{stat.kiosk}</td>
                 <td className="text-center">{stat.tourniquet}</td>
+
+                {/* ✅ Total solo */}
                 <td className="text-center">
-                  <div className="d-flex justify-content-center align-items-center gap-2">
-                    <span className="text-primary light">{stat.total}</span>
-                    <Badge bg="" className="light badge-primary" pill>
-                      {stat.percentage}%
-                    </Badge>
-                  </div>
+                  <span className="text-primary light">{stat.total}</span>
+                </td>
+
+                {/* ✅ % solo */}
+                <td className="text-center">
+                  <Badge bg="" className="light badge-primary" pill>
+                    {stat.percentage}%
+                  </Badge>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
+
+        <div className="text-muted small mt-2">
+          Total devices: <strong>{grandTotal.toLocaleString()}</strong>
+        </div>
       </div>
     </div>
   );

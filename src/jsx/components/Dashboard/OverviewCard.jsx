@@ -217,7 +217,7 @@ function DashboardOverviewCard() {
             </div>
           </div>
         </div>
-        <div className="row">
+        <div className="row align-items-start">
           <div className="col-xl-8 col-xxl-8 col-md-12">
             <div className="card">
               <div className="card-header pb-2">
