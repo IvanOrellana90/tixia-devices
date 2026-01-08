@@ -25,6 +25,7 @@ import ClientDetail from './components/Clients/ClientDetail';
 // Sites
 import AddSite from './components/Sites/AddSite';
 import SiteList from './components/Sites/SiteList';
+import SiteDetail from './components/Sites/SiteDetail';
 
 // Facility
 import AddFacility from './components/Facilities/AddFacility';
@@ -76,6 +77,7 @@ const Markup = () => {
     { url: 'add-site', component: <AddSite />, roles: ['admin']},
     { url: 'site-list', component: <SiteList /> },
     { url: 'sites', component: <SiteList /> },
+    { url: 'site/:id', component: <SiteDetail /> },
 
     //Facility
     { url: 'add-facility', component: <AddFacility />, roles: ['admin'] },

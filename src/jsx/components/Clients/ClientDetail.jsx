@@ -13,7 +13,7 @@ import { useDirectionMetrics } from '../../hooks/useDirectionMetrics';
 import { getBalanceStatus } from '../../helpers/details';
 import { useMonthlyAccessDeviation } from '../../hooks/useMonthlyAccessDeviation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faIdBadge, faGear, faPhone, faMobile, faMobileAlt } from '@fortawesome/free-solid-svg-icons';
+import { faMobileAlt } from '@fortawesome/free-solid-svg-icons';
 
 // ELIMINADA LA LÍNEA DE date-fns QUE CAUSABA EL ERROR
 
