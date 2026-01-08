@@ -1,69 +1,17 @@
-import React, { useEffect, useState, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRightToBracket,
   faArrowRightFromBracket,
   faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
-import { toast } from 'react-toastify';
 
-const AccessDirectionAlerts = ({ clientDb }) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!clientDb) return;
-      setLoading(true);
-      try {
-        const res = await fetch('/.netlify/functions/getDirectionMetrics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client_db: clientDb }),
-        });
-
-        if (!res.ok) throw new Error(`Status: ${res.status}`);
-        const rows = await res.json();
-        setData(rows || []);
-      } catch (error) {
-        console.error(error);
-        toast.error('Error loading access flow');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [clientDb]);
-
+const AccessDirectionAlerts = ({ loading, metrics }) => {
   const {
-    totalEntries,
-    totalExits,
-    totalEvents,
-    entryPct,
-    exitPct,
-  } = useMemo(() => {
-    let entries = 0;
-    let exits = 0;
-
-    data.forEach((item) => {
-      const count = Number(item.count || 0);
-      const id = Number(item.id);
-
-      if ([1, 4, 5].includes(id)) entries += count;
-      if ([2, 6].includes(id)) exits += count;
-    });
-
-    const total = entries + exits;
-
-    return {
-      totalEntries: entries,
-      totalExits: exits,
-      totalEvents: total,
-      entryPct: total > 0 ? (entries / total) * 100 : 0,
-      exitPct: total > 0 ? (exits / total) * 100 : 0,
-    };
-  }, [data]);
+    totalEntries = 0,
+    totalExits = 0,
+    entryPct = 0,
+    exitPct = 0,
+  } = metrics || {};
 
   if (loading) {
     return (
@@ -74,7 +22,7 @@ const AccessDirectionAlerts = ({ clientDb }) => {
     );
   }
 
-  if (!loading && data.length === 0) return null;
+  if (!metrics) return null;
 
   return (
     <div className="row">
@@ -97,8 +45,8 @@ const AccessDirectionAlerts = ({ clientDb }) => {
               </p>
 
               <small className="d-block opacity-75">
-                <strong>Percentage:</strong>{' '}
-                {entryPct.toFixed(1)}%
+                Percentage:{' '}
+                <strong>{entryPct.toFixed(1)}</strong>%
               </small>
             </div>
           </div>
@@ -124,8 +72,8 @@ const AccessDirectionAlerts = ({ clientDb }) => {
               </p>
 
               <small className="d-block opacity-75">
-                <strong>Percentage:</strong>{' '}
-                {exitPct.toFixed(1)}%
+                Percentage:{' '}
+                <strong>{exitPct.toFixed(1)}</strong>%
               </small>
             </div>
           </div>
