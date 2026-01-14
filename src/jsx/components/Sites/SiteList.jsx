@@ -6,6 +6,7 @@ import {
   useFilters,
   usePagination,
 } from 'react-table';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../supabase/client'; // Asegúrate de importar el cliente de Supabase
 import PageTitle from '../../layouts/PageTitle';
 
@@ -69,11 +70,21 @@ const SiteList = () => {
         Header: 'Name',
         accessor: 'name', // Accede a la propiedad "name" de cada sitio
         Filter: ColumnFilter, // Filtro por columna
+        Cell: ({ row, value }) => (
+          <Link to={`/site/${row.original.id}`} className="text-primary">
+            {value}
+          </Link>
+        ),
       },
       {
         Header: 'Client',
         accessor: 'client_name', // Accede a la propiedad "client_name" (nombre del cliente)
         Filter: ColumnFilter, // Filtro por columna
+        Cell: ({ row, value }) => (
+          <Link to={`/client/${row.original.client_id}`} className="text-primary">
+            {value}
+          </Link>
+        ),
       },
       {
         Header: 'KSEC ID',

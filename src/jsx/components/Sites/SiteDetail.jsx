@@ -1,14 +1,15 @@
 import { useEffect, Fragment, useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import PageTitle from '../../layouts/PageTitle';
 import { supabase } from '../../supabase/client';
 import { SVGICON } from '../../content/theme';
 import { Card } from 'react-bootstrap';
 
 import DeviceListFiltered from '../Devices/DeviceListFiltered';
-import ClientAccessChart from '../Clients/ClientAccessChart';
-import AccessInputChart from '../Clients/AccessInputChart';
+import ClientAccessChart from '../common/ClientAccessChart';
+import AccessInputChart from '../common/AccessInputChart';
 import SitesDevicesTable from '../Clients/SitesDevicesTable';
+import FacilitiesDevicesTable from './FacilitiesDevicesTable';
 import AccessDirectionAlerts from '../Clients/AccessDirectionAlerts';
 
 import { useDirectionMetrics } from '../../hooks/useDirectionMetrics';
@@ -19,16 +20,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobileAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 
 const SiteDetail = () => {
-  const { id } = useParams(); // id del site
+  const { id } = useParams();
   const [site, setSite] = useState(null);
   const [client, setClient] = useState(null);
   const [devices, setDevices] = useState([]);
+  const [facilities, setFacilities] = useState([]);
 
   // --- DB para métricas (ideal: site.bigquery_db; fallback: client.bigquery_db) ---
+  // --- DB para métricas (ideal: site.bigquery_db; fallback: client.bigquery_db) ---
   const metricsDb = site?.bigquery_db || client?.bigquery_db;
+  const targetSiteId = site?.ksec_id ? Number(site.ksec_id) : null;
 
-  const { loading: dirLoading, metrics: dirMetrics } = useDirectionMetrics(metricsDb);
-  const { loading: devLoading, status: devStatus } = useMonthlyAccessDeviation(metricsDb);
+  const { loading: dirLoading, metrics: dirMetrics } = useDirectionMetrics(metricsDb, targetSiteId);
+  const { loading: devLoading, status: devStatus } = useMonthlyAccessDeviation(metricsDb, targetSiteId);
 
   const balance = getBalanceStatus(dirMetrics?.totalEntries, dirMetrics?.totalExits);
 
@@ -81,6 +85,21 @@ const SiteDetail = () => {
     fetchDevices();
   }, [id]);
 
+  // --- Fetch Facilities del Site ---
+  useEffect(() => {
+    const fetchFacilities = async () => {
+      const { data, error } = await supabase
+        .from('facilities')
+        .select(`*`)
+        .eq('site_id', id);
+
+      if (error) console.error('Error fetching facilities:', error.message);
+      setFacilities(data || []);
+    };
+
+    fetchFacilities();
+  }, [id]);
+
   const cardData = useMemo(() => {
     const total = devices.length;
 
@@ -124,8 +143,10 @@ const SiteDetail = () => {
                         >
                           <FontAwesomeIcon icon={faUser} className="me-2 fs-18 text-primary" />
                         </div>
-                        <span className="fw-light me-2">Cliente:</span>
-                        {client?.name}
+                        <span className="fw-light me-2">Client:</span>
+                        <Link to={`/client/${client?.id}`} className="text-primary">
+                          {client?.name}
+                        </Link>
                       </li>
                       <li className="mb-1 d-flex align-items-center">
                         <div
@@ -203,14 +224,14 @@ const SiteDetail = () => {
       </div>
 
       {/* GRÁFICO ACCESOS */}
-      {metricsDb && <ClientAccessChart clientDb={metricsDb} />}
+      {metricsDb && <ClientAccessChart clientDb={metricsDb} siteId={targetSiteId} />}
 
       <div className="row">
         {/* Donut inputs */}
         <div className="col-md-12 col-xl-6">
           <div className="clearfix mt-3 mt-xl-0 ms-auto d-flex flex-column">
             <div className="clearfix mb-3 text-xl-center">
-              {metricsDb && <AccessInputChart clientDb={metricsDb} />}
+              {metricsDb && <AccessInputChart clientDb={metricsDb} siteId={targetSiteId} />}
             </div>
           </div>
         </div>
@@ -218,10 +239,12 @@ const SiteDetail = () => {
         {/* Tabla (en site, puedes mostrar la misma tabla pero con 1 solo site) */}
         <div className="col-md-12 col-xl-6">
           <div className="clearfix mt-3 mt-xl-0 ms-auto d-flex flex-column">
-            {site && (
-              <SitesDevicesTable
-                sites={[site]}      
-                devices={devices}   
+            {facilities.length > 0 && (
+              <FacilitiesDevicesTable
+                facilities={facilities}
+                devices={devices}
+                clientDb={metricsDb}
+                siteId={targetSiteId}
               />
             )}
           </div>
@@ -231,8 +254,8 @@ const SiteDetail = () => {
       {/* Lista de dispositivos filtrada */}
       {site?.id && (
         <DeviceListFiltered
-          filter={{ siteId: site.id }} 
-          clientName={site?.name}     
+          filter={{ siteId: site.id }}
+          clientName={site?.name}
         />
       )}
     </Fragment>
