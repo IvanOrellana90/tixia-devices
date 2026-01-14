@@ -37,7 +37,7 @@ const categories = [
   { key: 'Other', label: 'Other', color: '#775DD0', badge: 'bg-secondary' },
 ];
 
-export default function AccessInputChart({ clientDb }) {
+export default function AccessInputChart({ clientDb, siteId = null }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -53,7 +53,7 @@ export default function AccessInputChart({ clientDb }) {
         const res = await fetch('/.netlify/functions/getInputMetrics', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client_db: clientDb }),
+          body: JSON.stringify({ client_db: clientDb, site_id: siteId }),
         });
 
         if (!res.ok) {
@@ -71,7 +71,7 @@ export default function AccessInputChart({ clientDb }) {
     };
 
     fetchMetrics();
-  }, [clientDb]);
+  }, [clientDb, siteId]);
 
   const { counts, total } = useMemo(() => {
     const base = {
@@ -123,8 +123,8 @@ export default function AccessInputChart({ clientDb }) {
           dynamicAnimation: { enabled: true, speed: 400 },
         },
         events: {
-          dataPointMouseEnter: function () {},
-          dataPointMouseLeave: function () {},
+          dataPointMouseEnter: function () { },
+          dataPointMouseLeave: function () { },
         },
       },
       labels,

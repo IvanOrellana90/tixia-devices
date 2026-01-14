@@ -40,12 +40,12 @@ const isAllowed = (resultId) => {
 const processMetricsData = (rows, range) => {
 
   const RESULT_LABELS = {
-  1: 'Authorized',
-  2: 'Out of hours',
-  3: 'Not authorized',
-  4: 'Blocked',
-  5: 'Authorized on-site',
-  6: 'Double shift',
+    1: 'Authorized',
+    2: 'Out of hours',
+    3: 'Not authorized',
+    4: 'Blocked',
+    5: 'Authorized on-site',
+    6: 'Double shift',
   };
 
   const isAllowed = (resultId) => [1, 5].includes(Number(resultId));
@@ -115,7 +115,7 @@ const getLookbackDays = (range) => {
   return 7;
 };
 
-const ClientAccessChart = ({ clientDb }) => {
+const ClientAccessChart = ({ clientDb, siteId = null }) => {
   const [data, setData] = useState([]);
   const [timeRange, setTimeRange] = useState('12months');
   const [isLoading, setIsLoading] = useState(false);
@@ -137,6 +137,7 @@ const ClientAccessChart = ({ clientDb }) => {
           body: JSON.stringify({
             client_db: clientDb,
             lookback_days: lookbackDays,
+            site_id: siteId,
           }),
         });
 
@@ -155,7 +156,7 @@ const ClientAccessChart = ({ clientDb }) => {
     };
 
     fetchMetrics();
-  }, [clientDb, timeRange, lookbackDays]);
+  }, [clientDb, timeRange, lookbackDays, siteId]);
 
   const tooltipFormatter = (value, name) => {
     const labels = { total: 'Total', allowed: 'Allowed', denied: 'Denied', other: 'Other' };

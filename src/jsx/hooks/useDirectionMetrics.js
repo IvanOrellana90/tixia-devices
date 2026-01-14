@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 
-export function useDirectionMetrics(clientDb) {
+export function useDirectionMetrics(clientDb, siteId = null) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +15,7 @@ export function useDirectionMetrics(clientDb) {
         const res = await fetch('/.netlify/functions/getDirectionMetrics', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ client_db: clientDb }),
+          body: JSON.stringify({ client_db: clientDb, site_id: siteId }),
         });
 
         if (!res.ok) throw new Error(`Status: ${res.status}`);
@@ -31,7 +31,7 @@ export function useDirectionMetrics(clientDb) {
     };
 
     fetchData();
-  }, [clientDb]);
+  }, [clientDb, siteId]);
 
   const metrics = useMemo(() => {
     let entries = 0;

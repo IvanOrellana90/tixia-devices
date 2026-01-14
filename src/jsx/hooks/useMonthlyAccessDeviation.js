@@ -31,7 +31,7 @@ function buildMonthlyTotals(rows = []) {
   return sorted;
 }
 
-export function useMonthlyAccessDeviation(clientDb) {
+export function useMonthlyAccessDeviation(clientDb, siteId = null) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -50,6 +50,7 @@ export function useMonthlyAccessDeviation(clientDb) {
           body: JSON.stringify({
             client_db: clientDb,
             lookback_days: 365,
+            site_id: siteId,
           }),
         });
 
@@ -70,7 +71,7 @@ export function useMonthlyAccessDeviation(clientDb) {
     };
 
     fetchMetrics();
-  }, [clientDb]);
+  }, [clientDb, siteId]);
 
   const status = useMemo(() => {
     const monthTotals = buildMonthlyTotals(rows);
