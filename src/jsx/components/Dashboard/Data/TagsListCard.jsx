@@ -129,7 +129,7 @@ export default function ReleasesListCard() {
                 {releases.map((rel) => (
                   <button
                     key={rel.tag_name}
-                    className={`nav-link text-start ${
+                    className={`nav-link text-start git-nav ${
                       activeTag === rel.tag_name ? 'active' : ''
                     }`}
                     onClick={() => setActiveTag(rel.tag_name)}
