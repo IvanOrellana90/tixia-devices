@@ -61019,3 +61019,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .fc-event {
   cursor: pointer !important;
 }
+button.nav-link.text-start.git-nav {
+  padding: 0.5rem;
+}

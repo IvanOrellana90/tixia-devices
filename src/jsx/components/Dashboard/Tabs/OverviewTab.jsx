@@ -10,21 +10,23 @@ const OverviewTab = ({ devices, clients }) => {
 
   return (
     <> 
+    
+
       <div className="row align-items-start">
-        <div className="col-md-12 col-xl-4">
-          <DevicesByModeChart devices={devices} />
-        </div>
-        <div className="col-md-12 col-xl-8">
+        <div className="col-md-12 col-xl-12">
           <ClientDevicesTable clients={clients} devices={devices} />
         </div>
       </div>
       
       <div className="row align-items-start">
-        <div className="col-md-12 col-xl-8">
-          <TagsListCard />
+        <div className="col-md-12 col-xl-4">
+          <DevicesByModeChart devices={devices} />
         </div>
         <div className="col-xl-4 col-md-12">
           <DevicesByVersionChart />
+        </div>
+        <div className="col-md-12 col-xl-4">
+          <TagsListCard />
         </div>
       </div>
     </> 
