@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabase/client';
 import PageTitle from '../../layouts/PageTitle';
 import RoleGuard from '../Auth/RoleGuard';
+import { toast } from 'react-toastify';
 
 const ColumnFilter = ({ column }) => {
   const { filterValue, setFilter } = column;
@@ -26,6 +27,9 @@ const ColumnFilter = ({ column }) => {
 
 const MobileList = () => {
   const [mobiles, setMobiles] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [imeiInput, setImeiInput] = useState('');
+  const [mobileToDelete, setMobileToDelete] = useState(null);
   const nav = useNavigate();
 
   useEffect(() => {
@@ -54,6 +58,36 @@ const MobileList = () => {
 
     fetchMobiles();
   }, []);
+
+  const handleDelete = (mobile) => {
+    setMobileToDelete(mobile);
+    setShowAlert(true);
+  };
+
+  const confirmDelete = async () => {
+    if (imeiInput === mobileToDelete.imei) {
+      try {
+        const { error } = await supabase
+          .from('mobiles')
+          .delete()
+          .eq('id', mobileToDelete.id);
+
+        if (error) throw error;
+
+        setMobiles((prev) => prev.filter((m) => m.id !== mobileToDelete.id));
+        toast.success('Mobile deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting mobile:', error.message);
+        toast.error('Error deleting mobile.');
+      }
+    } else {
+      toast.error('Incorrect IMEI. Deletion canceled.');
+    }
+
+    setShowAlert(false);
+    setImeiInput('');
+    setMobileToDelete(null);
+  };
 
   const COLUMNS = [
     {
@@ -146,6 +180,14 @@ const MobileList = () => {
             <i className="fa fa-edit" />
           </button>
           </RoleGuard>
+          <RoleGuard allowedRoles={['admin']}>
+          <button
+            onClick={() => handleDelete(row.original)}
+            className="btn btn-danger shadow btn-xs"
+          >
+            <i className="fa fa-trash" />
+          </button>
+          </RoleGuard>
         </div>
       ),
       disableFilters: true,
@@ -190,6 +232,38 @@ const MobileList = () => {
   return (
     <>
       <PageTitle activeMenu="Mobiles" motherMenu="Table" />
+      {showAlert && (
+        <div
+          role="alert"
+          className="fade notification alert alert-danger show mb-4"
+        >
+          <p className="notification-title mb-2">
+            <strong>Confirm Deletion</strong>
+          </p>
+          <p>Please enter the IMEI of the mobile to confirm deletion:</p>
+          <input
+            type="text"
+            value={imeiInput}
+            onChange={(e) => setImeiInput(e.target.value)}
+            className="form-control mb-2"
+            placeholder="Enter IMEI"
+          />
+          <button
+            type="button"
+            onClick={confirmDelete}
+            className="btn btn-danger btn-sm me-2"
+          >
+            Confirm
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAlert(false)}
+            className="btn btn-link btn-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
       <div className="card">
         <div className="card-header">
           <h4 className="card-title">Mobile Devices</h4>
